@@ -1,0 +1,5 @@
+Window HelloWorldWindow {
+    Label HelloWorld_L {
+        String text := ['Hello World! updated']
+    }
+}

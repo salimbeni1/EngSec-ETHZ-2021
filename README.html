@@ -1,0 +1,36 @@
+<h1 id="readme">README</h1>
+<p>This is a dockerized version of the ActionGUI framework. It contains two images, a MySQL database and a lightweight linux machine with maven 3.5 and Java 8 installed. To start make sure you have docker installed and type:</p>
+<p><code>docker-compose up --build</code></p>
+<p>to build the images and run the containers the first time you use them. Note: If you are using an Apple M1 chip please see <code>actiongui-app/Dockerfile</code> and change the first import to specify the arm64 architecture.</p>
+<p>Once the images have been built you can start and stop the containers using:</p>
+<p><code>docker-compose up</code></p>
+<p>and</p>
+<p><code>docker-compose stop</code></p>
+<h2 id="compiling-and-executing-hello-world">Compiling and executing Hello World</h2>
+<p>Once the containers are running (you can check this with <code>docker ps</code> and you should see a mysql5 container and a container named <code>actiongui-app</code>) you can open a shell inside de maven container using:</p>
+<p><code>docker exec -it actiongui-app bash</code></p>
+<p>The directory <code>/usr/local/actiongui/</code> in the container is linked to the local <code>actiongui-app/projects/</code> in this folder. This folder contains the Hello World example described in the course tutorial under the folder <code>phil</code>. To compile the code go to the shared folder in the container and execute maven:</p>
+<pre><code>cd /usr/local/actiongui/phil
+mvn clean install</code></pre>
+<p>Next, to create the database, inside the container go to the shared directory and execute the <code>createDB.sh</code> script:</p>
+<pre><code>cd /usr/local/actiongui/phil
+./createDB.sh</code></pre>
+<p>Finally, to execute the compiled web application, go to the <code>phil/vm</code> directory:</p>
+<pre><code>cd /usr/local/actiongui/phil/vm
+mvn jetty:run-war</code></pre>
+<p>The app should be reachable from your local machine under <code>localhost:8080/vm</code>.</p>
+<h2 id="working-on-other-projects">Working on other projects</h2>
+<p>Since the folder <code>/usr/local/actiongui/</code> in the maven container and the local <code>actiongui-app/projects/</code> are synchronized, you can edit files locally using your favorite code editor and see these changes reflected on the container. You can try for instance to follow the more advanced examples in the course tutorial using the Hello World template as basis.</p>
+<p>If you would like to start a project from scratch, you can do so by generating one using maven archetypes on the shared folder:</p>
+<p><code>cd /usr/local/actiongui/</code></p>
+<pre><code>mvn archetype:generate  \ 
+-DgroupId=org.modelinglab  \ 
+-DartifactId=my-app  \
+-DarchetypeArtifactId=ag-archetype  \ 
+-DarchetypeVersion=2.5 \
+-DarchetypeGroupId=org.modelinglab.actiongui.maven.archetypes</code></pre>
+<p>This will create a new folder <code>my-app</code>. You can compile and run this similarly as the Hello World example. However make sure you adjust the DB settings under <code>./vm/src/test/resources/jetty/jetty-env.xml</code> in lines 13-15 to:</p>
+<pre><code>&lt;Set name=&quot;Url&quot;&gt;jdbc:mysql://mysql:3306/my-app&lt;/Set&gt; 
+&lt;Set name=&quot;User&quot;&gt;root&lt;/Set&gt;
+&lt;Set name=&quot;Password&quot;&gt;actiongui&lt;/Set&gt;</code></pre>
+<p>and to copy the <code>createDB.sh</code> script from the Hello World example in order to create the database for the new project.</p>

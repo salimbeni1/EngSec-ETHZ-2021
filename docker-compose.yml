@@ -1,0 +1,33 @@
+version: "3"
+services:
+
+  mysql:
+    image: mysql:5
+    container_name: mysql
+    command: mysqld --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql-data:/var/local/mysql/data
+    ports:
+      - "3306:3306"
+    hostname: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=actiongui
+      - MYSQL_DATABASE=mysql
+
+  actiongui-app:
+    build: actiongui-app
+    image: actiongui-app
+    volumes:
+      - ./actiongui-app/projects:/usr/local/actiongui
+    container_name: actiongui-app
+    hostname: actiongui-app
+    ports:
+      - "8080:8080"    
+    tty: true
+    depends_on:
+      - mysql
+
+volumes:
+  mysql-data:
+    driver: local
+

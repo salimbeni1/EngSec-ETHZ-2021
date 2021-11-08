@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.modelinglab</groupId>
+        <artifactId>phil</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>vm</artifactId>
+    <packaging>war</packaging>
+    <name>phil VM</name>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <vaadin.version>7.1.9</vaadin.version>
+        <vaadin.plugin.version>${vaadin.version}</vaadin.plugin.version>
+        
+        <jndi.jdbc>jdbc/phil</jndi.jdbc>
+        <databasename>phil</databasename>
+    </properties>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.modelinglab.actiongui.vm</groupId>
+            <artifactId>vaadin-viewer</artifactId>
+            <version>2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.modelinglab</groupId>
+            <artifactId>dtm</artifactId>
+            <version>${project.version}</version>
+            <type>ag-dtm</type>
+        </dependency>
+        <dependency>
+            <groupId>org.modelinglab</groupId>
+            <artifactId>stm</artifactId>
+            <version>${project.version}</version>
+            <type>ag-stm</type>
+        </dependency>
+        <dependency>
+            <groupId>org.modelinglab</groupId>
+            <artifactId>gtm</artifactId>
+            <version>${project.version}</version>
+            <type>ag-gtm</type>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>6.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <!-- We need to add the AG VM maven plugin to the build phase -->
+            <plugin>
+                <groupId>org.modelinglab.actiongui.maven</groupId>
+                <artifactId>ag-vm-maven-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <datasource>${jndi.jdbc}</datasource> <!--TODO: write here your datasource JNDI name -->
+                    <databaseName>${databasename}</databaseName> <!--TODO: write here your database name -->
+                    <initialWindowExp>
+                        Window::HelloWorldWindow
+                    </initialWindowExp>
+                    <initialRoleExp>
+                        Role::SYSTEM
+                    </initialRoleExp>
+                    <initialCallerExp>
+                        <!-- Write your initial caller expression here (optional)-->
+                    </initialCallerExp>
+                </configuration>
+                <executions>
+                    <execution>
+                        <!-- As there is no phase section, each goal is executed in its phase -->
+                        <goals>
+                            <goal>extract-models</goal>
+                            <goal>generate-css-template</goal>
+                            <goal>generate-sql-schema</goal>
+                            <goal>process-method-factories</goal>
+                            <goal>process-properties</goal>
+                            <goal>initial-expressions</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Java minimum requirement: Java 7 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            <!-- We don't want to use a web.xml-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+            
+            <!-- We need to copy the AG resources (models, configurations, etc) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-ag-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes/</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/generated-resources/ag/</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- this plugin configures jetty to work with ActionGUI. Feel free to configure it as you want. 
+            Documentation can be found at http://www.eclipse.org/jetty/documentation/current/jetty-maven-plugin.html-->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.1.0.v20131115</version>
+                <configuration>
+                    <webAppConfig>
+                        <jettyEnvXml>src/test/resources/jetty/jetty-env.xml</jettyEnvXml>
+                    </webAppConfig>
+                </configuration>
+                <!-- You have to add here a dependency to your datasource library.
+                By default MySql is used-->
+                <dependencies>
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>5.1.24</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <profiles>
+        <profile>
+            <id>cdi1.0</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.modelinglab.actiongui.vm</groupId>
+                    <artifactId>vaadin-viewer</artifactId>
+                    <version>2.5</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.google.guava</groupId>
+                            <artifactId>guava</artifactId>
+                        </exclusion>
+                    </exclusions>
+                    <type>jar</type>
+                </dependency>
+                <dependency>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                    <version>15.0</version>
+                    <classifier>cdi1.0</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+</project>

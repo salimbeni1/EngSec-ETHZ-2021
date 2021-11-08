@@ -1,0 +1,9 @@
+entity Thought {
+    String content
+    String creator
+    Integer votes
+}
+
+enum Role {
+    SYSTEM
+}

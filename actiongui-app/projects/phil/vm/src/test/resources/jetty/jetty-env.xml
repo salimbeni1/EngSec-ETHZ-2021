@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://www.eclipse.org/jetty/configure_9_0.dtd">
+<Configure id="Server" class="org.eclipse.jetty.webapp.WebAppContext">
+    <New id="myds" class="org.eclipse.jetty.plus.jndi.Resource">
+        <Arg></Arg>
+        <Arg>jdbc/phil</Arg> <!--TODO write here your datasource JNDI name -->
+        <Arg>
+            <New class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"> <!--TODO: write here your datasource class. By default MySql is used-->
+                <!--Here you have to configure your datasource connection. Usually parameters like user, 
+                password and url are mandatory, but it depends on each datasource implementation-->
+                <!--To set a parameter use the following sintaxys:-->
+                <!--<Set name="paramName">paramValue</Set> -->
+                <Set name="Url">jdbc:mysql://mysql:3306/phil</Set> <!--TODO: write here your database url -->
+                <Set name="User">root</Set> <!--TODO: write here your database user name-->
+                <Set name="Password">actiongui</Set> <!--TODO: write here your database password-->
+            </New>
+        </Arg>
+    </New>
+</Configure>
