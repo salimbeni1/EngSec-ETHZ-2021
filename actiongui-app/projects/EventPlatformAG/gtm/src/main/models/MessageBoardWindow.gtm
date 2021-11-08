@@ -1,0 +1,104 @@
+Window MessageBoardWindow {
+    Event entity
+    Label Posts_L {
+        String text := ['Message Board']
+    }
+    Table Table_Posts_T {
+        Set(Post) rows := [$MessageBoardWindow.entity$.messageBoard]
+        Post selected  := [null]
+        columns {
+            ['Author'] : Label author {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.author.username]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Content'] : Label content {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.content]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button DeletePost_B {
+        String text:= ['Delete Post']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    delete [$Table_Posts_T.selected$]
+
+                    notification(['Success'],['Post deleted'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Report_B {
+        String text:= ['Report Post']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    [$Table_Posts_T.selected$.flagged] := [true]
+
+                    notification(['Reported'],['Post reported'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    TextField Post_TF {
+        String text := [null]
+    }
+    Button Post_B {
+        String text := ['Write Post']
+        event onClick {
+            if [(not $Post_TF.text$.oclIsUndefined()) and ($Post_TF.text$.size() > 0)] {
+                try {
+                    newPost := new Post
+                    [$newPost$.flagged] := [false]
+                    [$newPost$.locked] := [false]
+                    [$newPost$.author] := [$MessageBoardWindow.caller$]
+                    [$newPost$.postedAt] := [$MessageBoardWindow.entity$]
+                    [$newPost$.content] := [$Post_TF.text$]
+
+                    notification(['Reported'],['Message posted'],[500])
+
+                    Post_TF.text := [null]
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['No text'],[500])
+            }
+        }
+    }
+
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+}

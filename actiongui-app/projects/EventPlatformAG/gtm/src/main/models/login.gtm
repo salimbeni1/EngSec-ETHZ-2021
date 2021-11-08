@@ -1,0 +1,45 @@
+Window LoginWindow {
+    String text := ['Log in']
+    Label Welcome_L {
+        String text := ['Welcome to the Meeting management application']
+    }
+
+    Label Username_L {
+        String text := ['Username']
+    }
+    TextField Username_TF {
+        String text := [null]
+    }
+    Label Password_L {
+        String text := ['Password']
+    }
+    PasswordField Password_TF {
+        String text := [null]
+    }
+
+    Button Login_B {
+        String text := ['Log in']
+        Person loggedUser
+        event onClick {
+            loggedUser := [Person.allInstances()->any(c|c.username = $Username_TF.text$ and c.password = $Password_TF.text$)]
+            if [ not($loggedUser$.oclIsUndefined()) ] {
+                open MainWindow(caller:[$loggedUser$], role:[$loggedUser$.role])
+            } else {
+                notification (['Message'],['Wrong credentials.'],[500])
+                Username_TF.text := [null]
+                Password_TF.text := [null]
+            }
+        }
+    }
+
+    Button Register_B {
+        String text := ['Register']
+        event onClick {
+            registeredUser := new Person
+            [$registeredUser$.username]:=[$Username_TF.text$]
+            [$registeredUser$.password]:=[$Password_TF.text$]
+            [$registeredUser$.role]:=[Role::FREEUSER]
+            open MainWindow(caller:[$registeredUser$], role:[$registeredUser$.role])
+        }
+    }
+}

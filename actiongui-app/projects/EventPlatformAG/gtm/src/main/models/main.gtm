@@ -1,0 +1,45 @@
+Window MainWindow {
+    String text := ['Welcome!']
+
+    Label User_L {
+        String text := ['Hello ' + $MainWindow.caller$.name.concat('!')]
+    }
+
+    Button Profile_B {
+        String text := ['User Profile']
+        Set(Event) probe1
+        Set(Invite) probe2
+        Set(Post) probe3
+        event onClick {
+            try {
+                // Reading probes (ensuring that tables in UserEventWindow can render data)
+                probe1 := [$MainWindow.caller$.events]
+                probe1 := [$MainWindow.caller$.attends]
+                probe2 := [$MainWindow.caller$.invitations]
+                probe3 := [$MainWindow.caller$.authored]
+                open UserEventWindow(caller:[$MainWindow.caller$], role:[$MainWindow.caller$.role], entity:[$MainWindow.caller$])
+            } catch (SecurityException) {
+                notification(['Error'],['Not allowed'],[500])
+            }
+        }
+    }
+
+    Button Categories_B {
+        String text := ['Categories']
+        event onClick {
+            open CategoryListWindow(caller:[$MainWindow.caller$], role:[$MainWindow.caller$.role])
+        }
+    }
+    Button Events_B {
+        String text:=['Events']
+        event onClick {
+            open EventListWindow(caller:[$MainWindow.caller$], role:[$MainWindow.caller$.role])
+        }
+    }
+    Button Users_B {
+        String text := ['Users']
+        event onClick {
+            open UserListWindow(caller:[$MainWindow.caller$], role:[$MainWindow.caller$.role])
+        }
+    }
+}

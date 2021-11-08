@@ -1,0 +1,105 @@
+Window EventUserWindow {
+    Event entity
+    Label Title_L {
+        String text:= ['Title']
+    }
+    TextField Title_TF {
+        String text := [$EventUserWindow.entity$.title]
+    }
+    TextField Description_TF {
+        String text := [$EventUserWindow.entity$.description]
+    }
+    Label Location_L {
+        String text := ['Location: ' + $EventUserWindow.entity$.location]
+    }
+    Label Date_L {
+        String text := ['Date: ' + $EventUserWindow.entity$.date.toString()]
+    }
+    Button Edit_B {
+        String text:= ['Edit']
+        event onClick {
+            if [(not $Title_TF.text$.oclIsUndefined()) and
+                (not ($Title_TF.text$.size()=0)) and
+                (not $Description_TF.text$.oclIsUndefined()) and
+                (not ($Description_TF.text$.size()=0))] {
+                try {
+                    [$EventUserWindow.entity$.title]:=[$Title_TF.text$]
+                    [$EventUserWindow.entity$.description]:=[$Description_TF.text$]
+
+                    notification(['Success'],['Event updated'],[500])
+                } catch (SecurityException) {
+                        notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Form contains errors.'],[500])
+            }
+        }
+    }
+    Button Join_B {
+        String text:= ['Join']
+        event onClick {
+            try {
+                if [ (not $EventUserWindow.caller$.attends->includes($EventUserWindow.entity$))] {
+                    if [ (not $EventUserWindow.caller$.requests->includes($EventUserWindow.entity$))] {
+                        if [not $EventUserWindow.caller$.invitations.event->asSet()->includes($EventUserWindow.entity$)] {
+                            [$EventUserWindow.caller$.requests] += [$EventUserWindow.entity$]
+                            notification(['Success'],['Requested to join'],[500])
+                        } else {
+                            notification(['Error'],['Already invited to join, see your invitations'],[500])
+                        }
+                    } else {
+                        notification(['Error'],['Already requested to join'],[500])
+                    }
+                } else {
+                    notification(['Error'],['Already attending'],[500])
+                }
+            } catch (SecurityException) {
+                notification(['Error'],['Not allowed'],[500])
+            }
+        }
+    }
+    Button View_B {
+        String text:= ['Show attendees']
+        event onClick {
+            try {
+                Table_Att_T.rows := [$EventUserWindow.entity$.attendants->collect(m|m.name.concat(' ').concat(m.surname))->asSet()]
+            } catch(SecurityException) {
+                notification(['Error'],['Not allowed'],[500])
+            }
+        }
+    }
+    Table Table_Att_T {
+        Set(String) rows := [Set {}]
+        columns {
+            ['Attendees'] : Label atts {
+                event onView (text) {
+                    try {
+                        text := [$Table_Att_T.row$]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+
+    Button MsgBoard_P {
+        String text := ['View message board']
+        Set(Post) probe
+        event onClick {
+            try {
+                probe := [$EventUserWindow.entity$.messageBoard]
+                open MessageBoardWindow(caller:[$EventUserWindow.caller$], role:[$EventUserWindow.caller$.role], entity:[$EventUserWindow.entity$])
+            } catch (SecurityException) {
+                notification(['Error'],['Not allowed'],[500])
+            }
+        }
+    }
+
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+}

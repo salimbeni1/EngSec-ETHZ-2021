@@ -1,0 +1,25 @@
+role NONE {}
+
+role FREEUSER {}
+
+role PREMIUMUSER {}
+
+role MODERATOR {}
+
+role ADMIN {}
+
+// The SYSTEM role is required for test data setup
+role SYSTEM {
+  Person {
+    fullAccess
+  }
+  Event {
+    fullAccess
+  }
+  Category {
+    fullAccess
+  }
+  Invite {
+    fullAccess
+  }
+}

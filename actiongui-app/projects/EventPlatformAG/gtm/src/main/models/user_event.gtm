@@ -1,0 +1,300 @@
+Window UserEventWindow {
+    Person entity
+    Button Edit_B {
+        String text := ['Edit information']
+        event onClick {
+            open UserWindow(caller:[$UserEventWindow.caller$], role:[$UserEventWindow.caller$.role], entity:[$UserEventWindow.caller$])
+        }
+    }
+    Label Events_L {
+        String text := ['My Managed Events:']
+    }
+    Table Table_T {
+        Set(Event) rows := [$UserEventWindow.entity$.events->union($UserEventWindow.entity$.manages)]
+        Event selected  := [null]
+        columns {
+            ['Title'] : Label title {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.title]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Date'] : Label date {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.date.toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Location'] : Label loc {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.location]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Owner'] : Label own {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.owner.name.concat(' ').concat($Table_T.row$.owner.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button View_B {
+        String text:= ['View Event']
+        event onClick {
+            if [ (not $Table_T.selected$.oclIsUndefined())  ] {
+                try {
+                    open EventManagerWindow(caller:[$UserEventWindow.caller$], role:[$UserEventWindow.caller$.role], entity:[$Table_T.selected$])
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Label Attending_L {
+        String text := ['Attending Events:']
+    }
+    Table Table_Att_T {
+        Set(Event) rows := [$UserEventWindow.entity$.attends]
+        Event selected  := [null]
+        columns {
+            ['Title'] : Label title {
+                event onView (text) {
+                    try {
+                        text := [$Table_Att_T.row$.title]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Date'] : Label date {
+                event onView (text) {
+                    try {
+                        text := [$Table_Att_T.row$.date.toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Location'] : Label loc {
+                event onView (text) {
+                    try {
+                        text := [$Table_Att_T.row$.location]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Owner'] : Label own {
+                event onView (text) {
+                    try {
+                        text := [$Table_Att_T.row$.owner.name.concat(' ').concat($Table_Att_T.row$.owner.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button View_Evt_B {
+        String text:= ['View Event']
+        event onClick {
+            if [ (not $Table_Att_T.selected$.oclIsUndefined())  ] {
+                try {
+                    if [$UserEventWindow.caller$.manages->includes($Table_Att_T.selected$)] {
+                        open EventManagerWindow(caller:[$UserEventWindow.caller$], role:[$UserEventWindow.caller$.role], entity:[$Table_Att_T.selected$])
+                    } else {
+                        open EventUserWindow(caller:[$UserEventWindow.caller$], role:[$UserEventWindow.caller$.role], entity:[$Table_Att_T.selected$])
+                    }
+
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Leave_B {
+        String text:= ['Leave']
+        event onClick {
+            if [ (not $Table_Att_T.selected$.oclIsUndefined())  ] {
+                try {
+                    //if [ not $UserEventWindow.entity$.events->includes($Table_Att_T.selected$)] {
+                        [$UserEventWindow.entity$.attends] -= [$Table_Att_T.selected$]
+
+                        notification(['Success'],['You have left the event'],[500])
+                        Table_Att_T.rows := [null]
+                        reevaluate Table_Att_T.rows
+
+                    //} else {
+                    //    notification(['Error'],['Cannot leave events that you own or manage'],[500])
+                    //}
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Label Invitations_L {
+        String text := ['Event invitations:']
+    }
+    Table Table_Inv_T {
+        Set(Invite) rows := [$UserEventWindow.entity$.invitations]
+        Invite selected  := [null]
+        columns {
+            ['Title'] : Label title {
+                event onView (text) {
+                    try {
+                        text := [$Table_Inv_T.row$.event.title]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Date'] : Label date {
+                event onView (text) {
+                    try {
+                        text := [$Table_Inv_T.row$.event.date.toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Location'] : Label loc {
+                event onView (text) {
+                    try {
+                        text := [$Table_Inv_T.row$.event.location]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Invited by'] : Label own {
+                event onView (text) {
+                    try {
+                        text := [$Table_Inv_T.row$.invitedBy.name.concat(' ').concat($Table_Inv_T.row$.invitedBy.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button Accept_B {
+        String text:= ['Accept']
+        event onClick {
+            if [ (not $Table_Inv_T.selected$.oclIsUndefined())  ] {
+                try {
+
+                    [$UserEventWindow.entity$.attends] += [$Table_Inv_T.selected$.event]
+                    delete [$Table_Inv_T.selected$]
+
+                    notification(['Success'],['Invite accepted'],[500])
+                    Table_Att_T.rows := [null]
+                    reevaluate Table_Att_T.rows
+                    Table_Inv_T.rows := [null]
+                    reevaluate Table_Inv_T.rows
+
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Reject_B {
+        String text:= ['Reject']
+        event onClick {
+            if [ (not $Table_Inv_T.selected$.oclIsUndefined())  ] {
+                try {
+
+                    delete [$Table_Inv_T.selected$]
+
+                    notification(['Success'],['Invite rejected'],[500])
+
+                    Table_Inv_T.rows := [null]
+                    reevaluate Table_Inv_T.rows
+
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Label Posts_L {
+        String text := ['Authored posts:']
+    }
+    Table Table_Posts_T {
+        Set(Post) rows := [$UserEventWindow.entity$.authored]
+        Post selected  := [null]
+        columns {
+            ['Content'] : Label title {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.content]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Posted in'] : Label date {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.postedAt.title]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button DeletePost_B {
+        String text:= ['Delete Post']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    delete [$Table_Posts_T.selected$]
+
+                    notification(['Success'],['Post deleted'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+}

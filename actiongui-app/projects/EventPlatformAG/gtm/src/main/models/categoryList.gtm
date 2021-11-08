@@ -1,0 +1,136 @@
+Window CategoryListWindow {
+    Label Title_L {
+        String text := ['Categories:']
+    }
+    Table Table_T {
+        Set(Category) rows := [Category.allInstances()]
+        Category selected  := [null]
+        columns {
+            ['Name'] : Label name {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.name]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Events'] : Label events {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.events->size().toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button View_B {
+        String text:= ['View Category']
+        event onClick {
+            if [(not $Table_T.selected$.oclIsUndefined())] {
+                open CategoryWindow(caller:[$CategoryListWindow.caller$], role:[$CategoryListWindow.caller$.role], entity:[$Table_T.selected$])
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Manage_B {
+        String text:= ['Manage Category']
+        Set(Person) probe
+        event onClick {
+            try {
+                // Only moderators and administrators can read subscribers
+                probe := [$Table_T.selected$.subscribers]
+                if [(not $Table_T.selected$.oclIsUndefined())] {
+                    open CategoryModeratorWindow(caller:[$CategoryListWindow.caller$], role:[$CategoryListWindow.caller$.role], entity:[$Table_T.selected$])
+                } else {
+                    notification(['Error'],['Nothing selected'],[500])
+                }
+            } catch (SecurityException) {
+                notification(['Error'],['Not allowed'],[500])
+            }
+        }
+    }
+    Button Subscribe_B {
+        String text:= ['Subscribe']
+        event onClick {
+            if [ (not $Table_T.selected$.oclIsUndefined())  ] {
+                try {
+                    if [ not $CategoryListWindow.caller$.subscriptions->includes($Table_T.selected$)] {
+
+                        [$Table_T.selected$.subscribers]+=[$CategoryListWindow.caller$]
+                        notification(['Success'],['Subscription successful'],[500])
+
+                        Table_T.rows := [null]
+                        reevaluate Table_T.rows
+                    } else {
+                        notification(['Error'],['Cannot subscribe: Already subscribed'],[500])
+                    }
+                } catch(SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Unsubscribe_B {
+        String text:= ['Unsubscribe']
+        event onClick {
+            if [ (not $Table_T.selected$.oclIsUndefined())  ] {
+                try {
+                    if [ $CategoryListWindow.caller$.subscriptions->includes($Table_T.selected$)] {
+
+                        [$Table_T.selected$.subscribers]-=[$CategoryListWindow.caller$]
+                        notification(['Success'],['Unsubscription successful'],[500])
+
+                        Table_T.rows := [null]
+                        reevaluate Table_T.rows
+                    } else {
+                        notification(['Error'],['Cannot unsubscribe: Not subscribed'],[500])
+                    }
+                } catch(SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Label Name_L {
+        String text:= ['Name']
+    }
+    TextField Name_TF {
+        String text:= [null]
+    }
+    Button Create_B {
+        String text:= ['Create']
+        event onClick {
+            if [(not $Name_TF.text$.oclIsUndefined()) and
+                ($Name_TF.text$.size() > 0)] {
+                try {
+                    newEntity := new Category
+                    [$newEntity$.name]:=[$Name_TF.text$]
+
+                    notification(['Success'],['Category created'],[500])
+                    Table_T.rows := [null]
+                    reevaluate Table_T.rows
+                    Name_TF.text:=[null]
+                } catch(SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['The form contains errors.'],[500])
+            }
+        }
+    }
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+}

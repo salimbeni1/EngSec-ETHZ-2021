@@ -1,0 +1,195 @@
+Window EvaluationWindow {
+
+   Button TestData_B {
+        String text := ['CLEAR DATABASE and Set up Test Data']
+
+        event onClick {
+
+            // Clear database
+            foreach i in [Invite.allInstances()] {
+                delete [$i$]
+            }
+
+            foreach p in [Person.allInstances()] {
+                delete [$p$]
+            }
+
+            foreach e in [Event.allInstances()] {
+                delete [$e$]
+            }
+
+            foreach c in [Category.allInstances()] {
+                delete [$c$]
+            }
+
+
+            // Set up test data
+            // Persons
+
+            testFreeUser := new Person
+            [$testFreeUser$.name]:=['Free']
+            [$testFreeUser$.surname]:=['F']
+            [$testFreeUser$.username]:=['free']
+            [$testFreeUser$.password]:=['fr33']
+            [$testFreeUser$.role]:=[Role::FREEUSER]
+
+            otherFreeUser := new Person
+            [$otherFreeUser$.name]:=['Alice']
+            [$otherFreeUser$.surname]:=['A']
+            [$otherFreeUser$.username]:=['alice']
+            [$otherFreeUser$.password]:=['4l1c3']
+            [$otherFreeUser$.role]:=[Role::FREEUSER]
+
+
+            testPremiumUser := new Person
+            [$testPremiumUser$.name]:=['Premium']
+            [$testPremiumUser$.surname]:=['P']
+            [$testPremiumUser$.username]:=['premium']
+            [$testPremiumUser$.password]:=['pr3m1um']
+            [$testPremiumUser$.role]:=[Role::PREMIUMUSER]
+
+            testModerator := new Person
+            [$testModerator$.name]:=['Moderator']
+            [$testModerator$.surname]:=['M']
+            [$testModerator$.username]:=['moderator']
+            [$testModerator$.password]:=['m0d3r4t0r']
+            [$testModerator$.role]:=[Role::MODERATOR]
+
+            //Categories
+
+            // Categories
+            testCategoryOne := new Category
+            [$testCategoryOne$.name] := ['Category1']
+
+            //Free user owns this event
+            //Events
+
+            freeUserEvent := new Event
+            [$testFreeUser$.events]+=[$freeUserEvent$]
+            [$testFreeUser$.manages]+=[$freeUserEvent$]
+            [$testFreeUser$.attends]+=[$freeUserEvent$]
+            [$freeUserEvent$.private] := [false]
+            [$freeUserEvent$.title] := ['Event1']
+            [$freeUserEvent$.description] := ['Desc']
+            [$freeUserEvent$.location] := ['location1']
+            [$freeUserEvent$.date] := [LocalDate.parse('2022-01-25')]
+            [$freeUserEvent$.categories] += [$testCategoryOne$]
+
+            //Other user attends this event
+
+            [$otherFreeUser$.attends]+=[$freeUserEvent$]
+
+            //Other Free user owns this event
+            //Events
+
+            otherFreeUserEvent := new Event
+            [$otherFreeUser$.events]+=[$otherFreeUserEvent$]
+            [$otherFreeUser$.manages]+=[$otherFreeUserEvent$]
+            [$otherFreeUser$.attends]+=[$otherFreeUserEvent$]
+            [$otherFreeUserEvent$.private] := [false]
+            [$otherFreeUserEvent$.title] := ['Event1 other']
+            [$otherFreeUserEvent$.description] := ['Desc']
+            [$otherFreeUserEvent$.location] := ['location1']
+            [$otherFreeUserEvent$.date] := [LocalDate.parse('2022-01-25')]
+            [$otherFreeUserEvent$.categories] += [$testCategoryOne$]
+
+            //Free user attends this event
+
+            [$testFreeUser$.attends]+=[$otherFreeUserEvent$]
+
+            //Other Free user second event
+
+            otherFreeUserEvent2 := new Event
+            [$otherFreeUser$.events]+=[$otherFreeUserEvent2$]
+            [$otherFreeUser$.manages]+=[$otherFreeUserEvent2$]
+            [$otherFreeUser$.attends]+=[$otherFreeUserEvent2$]
+            [$otherFreeUserEvent2$.private] := [false]
+            [$otherFreeUserEvent2$.title] := ['Event2 other']
+            [$otherFreeUserEvent2$.description] := ['Desc']
+            [$otherFreeUserEvent2$.location] := ['location1']
+            [$otherFreeUserEvent2$.date] := [LocalDate.parse('2022-01-25')]
+            [$otherFreeUserEvent2$.categories] += [$testCategoryOne$]
+
+            //Premium user private event
+
+            premiumPrivateEvent := new Event
+            [$testPremiumUser$.events]+=[$premiumPrivateEvent$]
+            [$testPremiumUser$.manages]+=[$premiumPrivateEvent$]
+            [$testPremiumUser$.attends]+=[$premiumPrivateEvent$]
+            [$premiumPrivateEvent$.title] := ['Event1 premium private']
+            [$premiumPrivateEvent$.private] := [true]
+            [$premiumPrivateEvent$.description] := ['Desc']
+            [$premiumPrivateEvent$.location] := ['location1']
+            [$premiumPrivateEvent$.date] := [LocalDate.parse('2022-01-25')]
+            [$premiumPrivateEvent$.categories] += [$testCategoryOne$]
+
+            //Premium user public event
+
+            premiumPublicEvent := new Event
+            [$testPremiumUser$.events]+=[$premiumPublicEvent$]
+            [$testPremiumUser$.manages]+=[$premiumPublicEvent$]
+            [$testPremiumUser$.attends]+=[$premiumPublicEvent$]
+            [$premiumPublicEvent$.title] := ['Event1 premium public']
+            [$premiumPublicEvent$.private] := [false]
+            [$premiumPublicEvent$.description] := ['Desc']
+            [$premiumPublicEvent$.location] := ['location1']
+            [$premiumPublicEvent$.date] := [LocalDate.parse('2022-01-25')]
+            [$premiumPublicEvent$.categories] += [$testCategoryOne$]
+
+            //Other user attends this event
+
+            [$otherFreeUser$.attends]+=[$premiumPublicEvent$]
+
+            // This is necessary to prevent an error that occurs otherwise
+            // Apparently, setting up the test data and then immediately using
+            // a newly generated user to open another window does not work properly
+            open EvaluationWindow(role:[Role::SYSTEM])
+        }
+    }
+
+
+    Button FreeUser_B {
+        String text := ['Free User Test Cases']
+        Person testFreeUser := [Person.allInstances()->any(p | p.username='free')]
+
+        event onClick {
+            open EvaluationFreeUserWindow(
+                caller:[$testFreeUser$],
+                role:[Role::FREEUSER],
+                // Read test data that was set up previously
+                otherUser:[Person.allInstances()->any(p | p.username='alice')],
+                testCategoryOne:[Category.allInstances()->any(c | c.name='Category1')],
+                ownEvent:[Event.allInstances()->any(e | e.title='Event1')],
+                othersEvent:[Event.allInstances()->any(e | e.title='Event1 other')],
+                othersEvent2:[Event.allInstances()->any(e | e.title='Event2 other')],
+                privateEvent:[Event.allInstances()->any(e | e.title='Event1 premium private')]
+            )
+        }
+    }
+
+    Button PremiumUser_B {
+        String text := ['Premium User Test Cases']
+        Person testPremiumUser := [Person.allInstances()->any(p | p.username='premium')]
+
+        event onClick {
+            open EvaluationPremiumUserWindow(
+                caller:[$testPremiumUser$],
+                role:[Role::PREMIUMUSER],
+                // Read test data that was set up previously
+                otherUser:[Person.allInstances()->any(p | p.username='alice')],
+                testCategoryOne:[Category.allInstances()->any(c | c.name='Category1')],
+                ownEvent:[Event.allInstances()->any(e | e.title='Event1 premium public')],
+                othersEvent:[Event.allInstances()->any(e | e.title='Event1 other')],
+                othersEvent2:[Event.allInstances()->any(e | e.title='Event2 other')],
+                privateEvent:[Event.allInstances()->any(e | e.title='Event1 premium private')]
+            )
+        }
+    }
+
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+}

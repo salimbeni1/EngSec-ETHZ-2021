@@ -1,0 +1,98 @@
+Window EventCreateWindow {
+    Label Title_L {
+        String text:= ['Title']
+    }
+    TextField Title_TF {
+        String text:= [null]
+    }
+    Label Description_L {
+        String text:= ['Description']
+    }
+    TextField Description_TF {
+        String text := [null]
+    }
+    Label Location_L {
+        String text := ['Location']
+    }
+    TextField Location_TF {
+        String text := [null]
+    }
+    BooleanField Private_BF {
+        Boolean value := [false]
+        String text := ['Private event']
+    }
+    Label Date_L {
+        String text:= ['Date']
+    }
+    DateField Date_DF {
+        LocalDateTime value:= [null]
+    }
+    Label Category_L {
+        String text:= ['Categories']
+    }
+    Table Table_Category_T {
+        Set(Category) rows := [Category.allInstances()]
+        Set(Category) selected  := [null]
+        columns {
+            ['Name'] : Label name {
+                event onView (text) {
+                    try {
+                        text := [$Table_Category_T.row$.name]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button Create_B {
+        String text := ['Create']
+        event onClick {
+            if [(not $Title_TF.text$.oclIsUndefined()) and
+                (not ($Title_TF.text$.size()=0)) and
+                (not $Description_TF.text$.oclIsUndefined()) and
+                (not ($Description_TF.text$.size()=0)) and
+                (not $Date_DF.value$.oclIsUndefined()) and
+                (not $Date_DF.value$.toLocalDate().oclIsInvalid()) and
+                (not ($Location_TF.text$.oclIsUndefined())) and
+                (not ($Location_TF.text$.size()=0)) and
+                (not $Table_Category_T.selected$->oclIsUndefined())] {
+                try {
+                    newEvent := new Event
+                    [$newEvent$.owner] := [$EventCreateWindow.caller$]
+                    [$newEvent$.managedBy] += [$EventCreateWindow.caller$]
+                    [$newEvent$.attendants] += [$EventCreateWindow.caller$]
+
+                    [$newEvent$.private] := [$Private_BF.value$]
+                    [$newEvent$.title] := [$Title_TF.text$]
+                    [$newEvent$.description] := [$Description_TF.text$]
+                    [$newEvent$.date] := [$Date_DF.value$.toLocalDate()]
+                    [$newEvent$.location] := [$Location_TF.text$]
+                    foreach cat in [$Table_Category_T.selected$] {
+                        [$newEvent$.categories] += [$cat$]
+                    }
+
+                    notification(['Success'],['Event created'],[500])
+
+                    Title_TF.text:=[null]
+                    Description_TF.text:=[null]
+                    Date_DF.value:=[null]
+                    Table_Category_T.selected:=[null]
+
+                    back
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Form contains errors.'],[500])
+            }
+        }
+    }
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+
+}

@@ -1,0 +1,80 @@
+Window EventListWindow {
+    Label Events_L {
+        String text := ['Events:']
+    }
+    Table Table_T {
+        Set(Event) rows := [Event.allInstances()]
+        Event selected  := [null]
+        columns {
+            ['Title'] : Label title {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.title]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Date'] : Label date {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.date.toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Location'] : Label loc {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.location]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Owner'] : Label own {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.owner.name.concat(' ').concat($Table_T.row$.owner.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button View_B {
+        String text:= ['View Event']
+        String probe
+        event onClick {
+            if [(not $Table_T.selected$.oclIsUndefined())] {
+                try {
+                    // Catch private events via probe
+                    probe := [$Table_T.selected$.title]
+                    if [$EventListWindow.caller$.manages->includes($Table_T.selected$)] {
+                        open EventManagerWindow(caller:[$EventListWindow.caller$], role:[$EventListWindow.caller$.role], entity:[$Table_T.selected$])
+                    } else {
+                        open EventUserWindow(caller:[$EventListWindow.caller$], role:[$EventListWindow.caller$.role], entity:[$Table_T.selected$])
+                    }
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Create_B {
+        String text:= ['Create an Event']
+        event onClick {
+            open EventCreateWindow(caller:[$EventListWindow.caller$], role:[$EventListWindow.caller$.role])
+        }
+    }
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+}

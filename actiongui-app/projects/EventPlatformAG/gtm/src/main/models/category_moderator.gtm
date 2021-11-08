@@ -1,0 +1,232 @@
+Window CategoryModeratorWindow {
+    Category entity
+    Label Category_L {
+        String text := ['Category: ' + $CategoryModeratorWindow.entity$.name]
+    }
+    Table Table_Mods_T {
+        Set(Person) rows := [$CategoryModeratorWindow.entity$.moderators]
+        Person selected := [null]
+        columns {
+            ['Category Moderators'] : Label mods {
+                event onView (text) {
+                    try {
+                        text := [$Table_Mods_T.row$.name.concat(' ').concat($Table_Mods_T.row$.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button Remove_B {
+        String text := ['Remove']
+        event onClick {
+            if [(not $Table_Mods_T.selected$.oclIsUndefined())] {
+                try {
+                    [$CategoryModeratorWindow.entity$.moderators] -= [$Table_Mods_T.selected$]
+                    notification(['Success'],['Moderator removed'],[500])
+                    Table_Mods_T.rows := [null]
+                    reevaluate Table_Mods_T.rows
+                    Table_Candidates_T.rows := [null]
+                    reevaluate Table_Candidates_T.rows
+
+                } catch (SecurityException) {
+                        notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Table Table_Candidates_T {
+        Set(Person) rows := [Person.allInstances()->select(p|p.role=Role::MODERATOR) - $CategoryModeratorWindow.entity$.moderators]
+        Person selected := [null]
+        columns {
+            ['Candidate Moderators'] : Label mods {
+                event onView (text) {
+                    try {
+                        text := [$Table_Candidates_T.row$.name.concat(' ').concat($Table_Candidates_T.row$.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button Add_B {
+        String text := ['Add']
+        event onClick {
+            if [(not $Table_Candidates_T.selected$.oclIsUndefined())] {
+                try {
+                    [$CategoryModeratorWindow.entity$.moderators] += [$Table_Candidates_T.selected$]
+                    notification(['Success'],['Moderator added'],[500])
+                    Table_Mods_T.rows := [null]
+                    reevaluate Table_Mods_T.rows
+                    Table_Candidates_T.rows := [null]
+                    reevaluate Table_Candidates_T.rows
+
+                } catch (SecurityException) {
+                        notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button View_B {
+        String text:= ['Show subscribers']
+        event onClick {
+            try {
+                Table_Subs_T.rows := [$CategoryModeratorWindow.entity$.subscribers->collect(m|m.name.concat(' ').concat(m.surname))->asSet()]
+                //reevaluate Table_Subs_T.rows
+
+            } catch(SecurityException) {
+                notification(['Error'],['Not allowed'],[500])
+            }
+        }
+    }
+    Table Table_Subs_T {
+        Set(String) rows := [Set {}]
+        columns {
+            ['Subscribers'] : Label username {
+                event onView (text) {
+                    try {
+                        text := [$Table_Subs_T.row$]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Label Posts_L {
+        String text := ['Posts']
+    }
+    Table Table_Posts_T {
+        Set(Post) rows := [Post.allInstances()->select(
+            p | p.postedAt.categories->includes($CategoryModeratorWindow.entity$)
+        )]
+        Post selected  := [null]
+        columns {
+            ['Author'] : Label author {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.author.username]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Content'] : Label content {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.content]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Is reported'] : Label reported {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.flagged.toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Is locked'] : Label locked {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.locked.toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button DeletePost_B {
+        String text:= ['Delete Post']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    delete [$Table_Posts_T.selected$]
+
+                    notification(['Success'],['Post deleted'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Review_B {
+        String text:= ['Review and clear']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    [$Table_Posts_T.selected$.flagged] := [false]
+
+                    notification(['Reported'],['Post clear'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Lock_B {
+        String text:= ['Review and lock']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    [$Table_Posts_T.selected$.flagged] := [false]
+                    [$Table_Posts_T.selected$.locked] := [true]
+
+                    notification(['Reported'],['Post locked'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Clear_B {
+        String text:= ['Clear lock']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    [$Table_Posts_T.selected$.locked] := [false]
+
+                    notification(['Reported'],['Post cleared'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+}

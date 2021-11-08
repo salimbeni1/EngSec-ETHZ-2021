@@ -1,0 +1,207 @@
+Window UserCategoryWindow {
+    Person entity
+    Label Title_L {
+        String text := ['Categories:']
+    }
+    Table Table_T {
+        Set(Category) rows := [Category.allInstances()]
+        Set(Category) selected  := [null]
+        columns {
+            ['Name'] : Label name {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.name]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Events'] : Label events {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.events->size().toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Subscribers'] : Label subs {
+                event onView (text) {
+                    try {
+                        text := [$Table_T.row$.subscribers->size().toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button Subscribe_B {
+        String text:= ['Subscribe']
+        Boolean change := [false]
+        event onClick {
+            if [ (not $Table_T.selected$->oclIsUndefined())  and
+                 (not ($Table_T.selected$->size() < 1)) ] {
+                try {
+                    foreach cat in [$Table_T.selected$] {
+                        if [ not $UserCategoryWindow.entity$.subscriptions->includes($cat$) ] {
+                            [$UserCategoryWindow.entity$.subscriptions]+=[$cat$]
+                            change := [true]
+                        }
+                    }
+
+                    if [$change$] {
+                        notification(['Success'],['Subscription(s) successful'],[500])
+                    }
+                    Table_T.rows := [null]
+                    reevaluate Table_T.rows
+                    Table_Sub_T.rows := [null]
+                    reevaluate Table_Sub_T.rows
+                    Table_Event_T.rows := [null]
+                    reevaluate Table_Event_T.rows
+                } catch(SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Label Title_Sub_L {
+        String text := ['Subscriptions:']
+    }
+    Table Table_Sub_T {
+        Set(Category) rows := [$UserCategoryWindow.entity$.subscriptions]
+        Set(Category) selected  := [null]
+        columns {
+            ['Name'] : Label name {
+                event onView (text) {
+                    try {
+                        text := [$Table_Sub_T.row$.name]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Events'] : Label events {
+                event onView (text) {
+                    try {
+                        text := [$Table_Sub_T.row$.events->size().toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Subscribers'] : Label subs {
+                event onView (text) {
+                    try {
+                        text := [$Table_Sub_T.row$.subscribers->size().toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+
+    Button Unsubscribe_B {
+        String text:= ['Unsubscribe']
+        event onClick {
+            if [ (not $Table_Sub_T.selected$->oclIsUndefined()) and
+                 (not ($Table_Sub_T.selected$->size() < 1)) ] {
+                try {
+                    foreach cat in [$Table_Sub_T.selected$] {
+                        if [ $UserCategoryWindow.entity$.subscriptions->includes($cat$) ] {
+                            [$cat$.subscribers]-=[$UserCategoryWindow.entity$]
+                        }
+                    }
+                    notification(['Success'],['Unsubscription(s) successful'],[500])
+
+                    Table_T.rows := [null]
+                    reevaluate Table_T.rows
+                    Table_Sub_T.rows := [null]
+                    reevaluate Table_Sub_T.rows
+                    Table_Event_T.rows := [null]
+                    reevaluate Table_Event_T.rows
+                } catch(SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Label Events_L {
+        String text := ["Events in " + $UserCategoryWindow.entity$.name +"'s categories:"]
+    }
+    Table Table_Event_T {
+        Set(Event) rows := [$UserCategoryWindow.entity$.subscriptions.events->asSet()]
+        Event selected  := [null]
+        columns {
+            ['Title'] : Label title {
+                event onView (text) {
+                    try {
+                        text := [$Table_Event_T.row$.title]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Date'] : Label date {
+                event onView (text) {
+                    try {
+                        text := [$Table_Event_T.row$.date.toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Location'] : Label loc {
+                event onView (text) {
+                    try {
+                        text := [$Table_Event_T.row$.location]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Owner'] : Label own {
+                event onView (text) {
+                    try {
+                        text := [$Table_Event_T.row$.owner.name.concat(' ').concat($Table_Event_T.row$.owner.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button View_B {
+        String text:= ['View Event']
+        event onClick {
+            if [ (not $Table_Event_T.selected$.oclIsUndefined())  ] {
+                try {
+                    if [$UserCategoryWindow.caller$.manages->includes($Table_Event_T.selected$)] {
+                        open EventManagerWindow(caller:[$UserCategoryWindow.caller$], role:[$UserCategoryWindow.caller$.role], entity:[$Table_Event_T.selected$])
+                    } else {
+                        open EventUserWindow(caller:[$UserCategoryWindow.caller$], role:[$UserCategoryWindow.caller$.role], entity:[$Table_Event_T.selected$])
+                    }
+
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+
+}

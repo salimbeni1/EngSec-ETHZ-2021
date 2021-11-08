@@ -1,0 +1,86 @@
+entity Person {
+  String name
+  String surname
+  String username
+  String password
+  Role role
+
+  // Events
+  Set(Event) events oppositeTo owner
+  Set(Event) manages oppositeTo managedBy
+  Set(Event) attends oppositeTo attendants
+  Set(Post) authored oppositeTo author
+
+  // Categories
+  Set(Category) subscriptions oppositeTo subscribers
+  Set(Category) moderates oppositeTo moderators
+
+  // Invites
+  Set(Invite) invitations oppositeTo invitee
+  Set(Invite) invites oppositeTo invitedBy
+
+  // Requests
+  Set(Event) requests oppositeTo requesters
+}
+
+entity Event {
+  String title
+  String description
+  String location
+  LocalDate date
+  Boolean private
+
+  // Posts
+  Set(Post) messageBoard oppositeTo postedAt
+
+  // Person
+  Person owner oppositeTo events
+  Set(Person) managedBy oppositeTo manages
+  Set(Person) attendants oppositeTo attends
+
+  // Categories
+  Set(Category) categories oppositeTo events
+
+  // Invites & Requests
+  Set(Invite) invitations oppositeTo event
+  Set(Person) requesters oppositeTo requests
+}
+
+entity Post {
+  String content
+  Boolean flagged
+  Boolean locked
+
+  Person author oppositeTo authored
+  Event postedAt oppositeTo messageBoard
+}
+
+entity Category {
+  String name
+
+  // Person
+  Set(Person) subscribers oppositeTo subscriptions
+  Set(Person) moderators oppositeTo moderates
+
+  // Events
+  Set(Event) events oppositeTo categories
+}
+
+entity Invite {
+  // Person
+  Person invitee oppositeTo invitations
+  Person invitedBy oppositeTo invites
+
+  // Events
+  Event event oppositeTo invitations
+}
+
+enum Role {
+  NONE
+  FREEUSER
+  PREMIUMUSER
+  MODERATOR
+  ADMIN
+  // The system role is required for test data setup
+  SYSTEM
+}

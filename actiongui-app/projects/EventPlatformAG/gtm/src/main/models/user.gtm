@@ -1,0 +1,89 @@
+Window UserWindow {
+    Person entity
+
+    Label Name_L {
+        String text:= ['Name:']
+    }
+    TextField Name_TF {
+        String text := [$UserWindow.entity$.name]
+    }
+    Label Surname_L {
+        String text:= ['Surname:']
+    }
+    TextField Surname_TF {
+        String text := [$UserWindow.entity$.surname]
+    }
+    Label Username_L {
+        String text:= ['Username:']
+    }
+    Label Entityusername_L {
+        String text := [$UserWindow.entity$.username]
+    }
+    Label Password_L {
+        String text:= ['Password:']
+    }
+    PasswordField Password_PF {
+        String text := [null]
+    }
+    Label Role_L {
+        String text:= ['Role:']
+    }
+    ComboBox Role_CB {
+        Set(Role) rows := [Role.allInstances()->select(r|r<>Role::SYSTEM)]
+        Role selected  := [$UserWindow.entity$.role]
+        Label roles {
+            event onView (text) {
+                try {
+                    text := [$Role_CB.row$.name()]
+                } catch (SecurityException) {
+                    text := ['RESTRICTED']
+                }
+            }
+        }
+    }
+
+    Button Update_B {
+        String text := ['Update info']
+        event onClick {
+            try {
+                if [$UserWindow.entity$.name <> $Name_TF.text$] {
+                    [$UserWindow.entity$.name]:=[$Name_TF.text$]
+                }
+                if [$UserWindow.entity$.surname <> $Surname_TF.text$] {
+                    [$UserWindow.entity$.surname]:=[$Surname_TF.text$]
+                }
+                if [(not $Password_PF.text$.oclIsUndefined()) and
+                    (not ($Password_PF.text$.size()=0))] {
+                    [$UserWindow.entity$.password]:=[$Password_PF.text$]
+                }
+                if [$UserWindow.entity$.role <> $Role_CB.selected$] {
+                    [$UserWindow.entity$.role]:=[$Role_CB.selected$]
+                }
+                notification(['Success'],['User updated'],[500])
+            } catch (SecurityException) {
+                notification(['Error'],['Not allowed'],[500])
+            }
+        }
+    }
+    Button Categories_B {
+        String text := ['View Subscriptions']
+        Set(Category) probe
+        event onClick {
+            try {
+                probe := [$UserWindow.entity$.subscriptions]
+                open UserCategoryWindow(caller:[$UserWindow.caller$], role:[$UserWindow.caller$.role], entity:[$UserWindow.entity$])
+            } catch (SecurityException) {
+                notification(['Error'],['Not allowed'],[500])
+            }
+        }
+    }
+
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+
+
+}

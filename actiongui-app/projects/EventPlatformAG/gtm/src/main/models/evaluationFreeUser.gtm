@@ -1,0 +1,134 @@
+Window EvaluationFreeUserWindow {
+    Person otherUser
+    Category testCategoryOne
+    Event ownEvent
+    Event othersEvent
+    Event othersEvent2
+    Event privateEvent
+
+    Integer passed := [0]
+    String failedTestCases := ['']
+
+    Label Passed_L {
+        String text := ['Number of passed test cases: ' + $EvaluationFreeUserWindow.passed$.toString()]
+    }
+
+    Label Failed_L {
+        String text := ['Failed the following test cases: ' + $EvaluationFreeUserWindow.failedTestCases$]
+    }
+
+    Button TestCases_B {
+        String text:= ['Run Test Cases']
+        String readString
+        Role readRole
+        Set(Category) readCategories
+        Set(Event) readEvents
+        Person thirdUser
+        Event othersEventManaging
+        Category testCategoryTwo
+        Category testCategoryThree
+        LocalDate readDate
+        LocalDate testDate
+        Integer readInteger
+        Person readPerson
+        Set(Person) readPersons
+        event onClick {
+            EvaluationFreeUserWindow.passed:= [0]
+            EvaluationFreeUserWindow.failedTestCases:= ['']
+
+            testDate := [LocalDate.parse('2022-01-25')]
+
+            // Test Case 1: Create a public event
+            // Should PASS
+            try {
+                newEventTest := new Event
+                // Alternate between person and event association ends to probe
+                // symmetric implementation of constraints.
+                [$EvaluationFreeUserWindow.caller$.events] += [$newEventTest$]
+                [$EvaluationFreeUserWindow.caller$.manages] += [$newEventTest$]
+                [$newEventTest$.attendants] += [$EvaluationFreeUserWindow.caller$]
+
+                [$newEventTest$.title] := ['Test event']
+                [$newEventTest$.private] := [false]
+                [$newEventTest$.description] := ['Test description']
+                [$newEventTest$.date] := [$testDate$]
+                [$newEventTest$.location] := ['Test location']
+                [$EvaluationFreeUserWindow.testCategoryOne$.events] += [$newEventTest$]
+
+                EvaluationFreeUserWindow.passed := [$EvaluationFreeUserWindow.passed$ + 1]
+            } catch (SecurityException) {
+               EvaluationFreeUserWindow.failedTestCases:= [$EvaluationFreeUserWindow.failedTestCases$ + ' CreatePublic ']
+            }
+
+            // Test Case 2: Create a private event
+            // Should FAIL
+            try {
+                newEventTestPrivate := new Event
+                [$EvaluationFreeUserWindow.caller$.events] += [$newEventTestPrivate$]
+                [$EvaluationFreeUserWindow.caller$.manages] += [$newEventTestPrivate$]
+                [$EvaluationFreeUserWindow.caller$.attends] += [$newEventTestPrivate$]
+
+                [$newEventTestPrivate$.title] := ['Test event']
+                [$newEventTestPrivate$.private] := [true]
+                [$newEventTestPrivate$.description] := ['Test description']
+                [$newEventTestPrivate$.date] := [$testDate$]
+                [$newEventTestPrivate$.location] := ['Test location']
+                [$newEventTestPrivate$.categories] += [$EvaluationFreeUserWindow.testCategoryOne$]
+
+                EvaluationFreeUserWindow.failedTestCases:= [$EvaluationFreeUserWindow.failedTestCases$ + ' CreatePrivate ']
+            } catch (SecurityException) {
+                EvaluationFreeUserWindow.passed := [$EvaluationFreeUserWindow.passed$ + 1]
+            }
+
+            // Test Case 3: Promote attendant to manager from event owned
+            // Should PASS
+            try {
+                [$EvaluationFreeUserWindow.ownEvent$.managedBy] += [$EvaluationFreeUserWindow.otherUser$]
+
+                EvaluationFreeUserWindow.passed := [$EvaluationFreeUserWindow.passed$ + 1]
+            } catch (SecurityException) {
+               EvaluationFreeUserWindow.failedTestCases:= [$EvaluationFreeUserWindow.failedTestCases$ + ' PromoteAttendantOwn ']
+            }
+
+            // Test Case 4: Promote oneself as manager for event not owned
+           // Should FAIL
+            try {
+                [$EvaluationFreeUserWindow.caller$.manages] += [$EvaluationFreeUserWindow.othersEvent$]
+
+                EvaluationFreeUserWindow.failedTestCases:= [$EvaluationFreeUserWindow.failedTestCases$ + ' PromoteAttendantOthers ']
+            } catch (SecurityException) {
+                EvaluationFreeUserWindow.passed := [$EvaluationFreeUserWindow.passed$ + 1]
+            }
+
+            // Test Case 5: Request to join public event
+            // Should PASS
+            try {
+                [$EvaluationFreeUserWindow.caller$.requests] += [$EvaluationFreeUserWindow.othersEvent2$]
+
+                EvaluationFreeUserWindow.passed := [$EvaluationFreeUserWindow.passed$ + 1]
+            } catch (SecurityException) {
+                EvaluationFreeUserWindow.failedTestCases:= [$EvaluationFreeUserWindow.failedTestCases$ + ' RequestPublicEvent ']
+            }
+
+            // Test Case 6: Request to join private event
+           // Should FAIL
+            try {
+                [$EvaluationFreeUserWindow.caller$.requests] += [$EvaluationFreeUserWindow.privateEvent$]
+
+                EvaluationFreeUserWindow.failedTestCases:= [$EvaluationFreeUserWindow.failedTestCases$ + ' RequestPrivateEvent ']
+            } catch (SecurityException) {
+                EvaluationFreeUserWindow.passed := [$EvaluationFreeUserWindow.passed$ + 1]
+            }
+
+            reevaluate Passed_L.text
+            reevaluate Failed_L.text
+        }
+    }
+
+    Button Back_B {
+        String text := ['Back to main evaluation window']
+        event onClick {
+            open EvaluationWindow(role:[Role::SYSTEM])
+        }
+    }
+}

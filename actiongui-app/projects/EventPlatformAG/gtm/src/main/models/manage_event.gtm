@@ -1,0 +1,363 @@
+Window ManageEventWindow {
+    Event entity
+
+    Table Table_Att_T {
+        Set(Person) rows := [$ManageEventWindow.entity$.attendants]
+        Person selected  := [null]
+        columns {
+            ['Attendants'] : Label title {
+                event onView (text) {
+                    try {
+                        text := [$Table_Att_T.row$.name.concat(' ').concat($Table_Att_T.row$.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+
+        }
+    }
+    Button Add_B {
+        String text := ['Promote to manager']
+        event onClick {
+            if [ (not $Table_Att_T.selected$.oclIsUndefined())  ] {
+                try {
+                    [$ManageEventWindow.entity$.managedBy] += [$Table_Att_T.selected$]
+                    notification(['Success'],['Promoted to manager'],[500])
+                    Table_Att_T.rows := [null]
+                    reevaluate Table_Att_T.rows
+                    Table_Mgr_T.rows := [null]
+                    reevaluate Table_Mgr_T.rows
+
+                } catch (SecurityException) {
+                        notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Kick_B {
+        String text := ['Remove from event']
+        event onClick {
+            if [not $Table_Att_T.selected$.oclIsUndefined()] {
+                try {
+                    [$ManageEventWindow.entity$.attendants] -= [$Table_Att_T.selected$]
+
+                    notification(['Success'],['Removed from event'],[500])
+
+                    Table_Att_T.rows := [null]
+                    reevaluate Table_Att_T.rows
+                    Table_Mgr_T.rows := [null]
+                    reevaluate Table_Mgr_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Table Table_Mgr_T {
+        Set(Person) rows := [$ManageEventWindow.entity$.managedBy]
+        Person selected  := [null]
+        columns {
+            ['Managers'] : Label title {
+                event onView (text) {
+                    try {
+                        text := [$Table_Mgr_T.row$.name.concat(' ').concat($Table_Mgr_T.row$.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+
+        }
+    }
+    Button Remove_B {
+        String text := ['Demote to attendee']
+        event onClick {
+            if [ (not $Table_Mgr_T.selected$.oclIsUndefined())  ] {
+                try {
+                    [$ManageEventWindow.entity$.managedBy] -= [$Table_Mgr_T.selected$]
+                    notification(['Success'],['Demoted to attendee'],[500])
+                    Table_Att_T.rows := [null]
+                    reevaluate Table_Att_T.rows
+                    Table_Mgr_T.rows := [null]
+                    reevaluate Table_Mgr_T.rows
+
+                } catch (SecurityException) {
+                        notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Table Table_Reqs_T {
+        Set(Person) rows := [$ManageEventWindow.entity$.requesters]
+        Person selected := [null]
+        columns {
+            ['Requests'] : Label mods {
+                event onView (text) {
+                    try {
+                        text := [$Table_Reqs_T.row$.name.concat(' ').concat($Table_Reqs_T.row$.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button Accept_B {
+        String text:= ['Accept']
+        event onClick {
+            if [ (not $Table_Reqs_T.selected$.oclIsUndefined())  ] {
+                try {
+
+                    [$ManageEventWindow.entity$.attendants] += [$Table_Reqs_T.selected$]
+                    [$ManageEventWindow.entity$.requesters] -= [$Table_Reqs_T.selected$]
+
+                    notification(['Success'],['Request accepted'],[500])
+                    Table_Att_T.rows := [null]
+                    reevaluate Table_Att_T.rows
+                    Table_Reqs_T.rows := [null]
+                    reevaluate Table_Reqs_T.rows
+                    Table_Inv_T.rows := [null]
+                    reevaluate Table_Inv_T.rows
+
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Reject_B {
+        String text:= ['Reject']
+        event onClick {
+            if [ (not $Table_Reqs_T.selected$.oclIsUndefined())  ] {
+                try {
+
+                    [$ManageEventWindow.entity$.requesters] -= [$Table_Reqs_T.selected$]
+
+                    notification(['Success'],['Request rejected'],[500])
+                    Table_Att_T.rows := [null]
+                    reevaluate Table_Att_T.rows
+                    Table_Reqs_T.rows := [null]
+                    reevaluate Table_Reqs_T.rows
+                    Table_Inv_T.rows := [null]
+                    reevaluate Table_Inv_T.rows
+
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Table Table_Inv_T {
+        Set(Person) rows := [Person.allInstances() - ($ManageEventWindow.entity$.attendants->union($ManageEventWindow.entity$.invitations.invitee->asSet())->union($ManageEventWindow.entity$.requesters))]
+        Person selected  := [null]
+        columns {
+            ['Users'] : Label username {
+                event onView (text) {
+                    try {
+                        text := [$Table_Inv_T.row$.name.concat(' ').concat($Table_Inv_T.row$.surname)]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button Invite_B {
+        String text:= ['Invite']
+        event onClick {
+            if [ (not $Table_Inv_T.selected$.oclIsUndefined())  ] {
+                try {
+                    //check something?
+
+                    newInvite := new Invite
+                    [$newInvite$.event] := [$ManageEventWindow.entity$]
+                    [$newInvite$.invitedBy] := [$ManageEventWindow.caller$]
+                    [$newInvite$.invitee] := [$Table_Inv_T.selected$]
+
+                    notification(['Success'],['Invitation sent'],[500])
+
+                    Table_Inv_T.rows := [null]
+                    reevaluate Table_Inv_T.rows
+
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    Label Posts_L {
+        String text := ['Message Board']
+    }
+    Table Table_Posts_T {
+        Set(Post) rows := [$ManageEventWindow.entity$.messageBoard]
+        Post selected  := [null]
+        columns {
+            ['Author'] : Label author {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.author.username]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Content'] : Label content {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.content]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Is reported'] : Label reported {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.flagged.toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+            ['Is locked'] : Label locked {
+                event onView (text) {
+                    try {
+                        text := [$Table_Posts_T.row$.locked.toString()]
+                    } catch (SecurityException) {
+                        text := ['RESTRICTED']
+                    }
+                }
+            }
+        }
+    }
+    Button DeletePost_B {
+        String text:= ['Delete Post']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    delete [$Table_Posts_T.selected$]
+
+                    notification(['Success'],['Post deleted'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Report_B {
+        String text:= ['Report Post']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    [$Table_Posts_T.selected$.flagged] := [true]
+
+                    notification(['Reported'],['Post reported'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Clear_B {
+        String text:= ['Review and clear']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    [$Table_Posts_T.selected$.flagged] := [false]
+
+                    notification(['Reported'],['Post clear'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+    Button Lock_B {
+        String text:= ['Review and lock']
+        event onClick {
+            if [not $Table_Posts_T.selected$.oclIsUndefined()] {
+                try {
+                    [$Table_Posts_T.selected$.flagged] := [false]
+                    [$Table_Posts_T.selected$.locked] := [true]
+
+                    notification(['Reported'],['Post locked'],[500])
+
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['Nothing selected'],[500])
+            }
+        }
+    }
+
+    TextField Post_TF {
+        String text := [null]
+    }
+    Button Post_B {
+        String text := ['Write Post']
+        event onClick {
+            if [(not $Post_TF.text$.oclIsUndefined()) and ($Post_TF.text$.size() > 0)] {
+                try {
+                    newPost := new Post
+                    [$newPost$.author] := [$ManageEventWindow.caller$]
+                    [$newPost$.postedAt] := [$ManageEventWindow.entity$]
+                    [$newPost$.content] := [$Post_TF.text$]
+                    [$newPost$.flagged] := [false]
+                    [$newPost$.locked] := [false]
+
+                    notification(['Reported'],['Message posted'],[500])
+
+                    Post_TF.text := [null]
+                    Table_Posts_T.rows := [null]
+                    reevaluate Table_Posts_T.rows
+                } catch (SecurityException) {
+                    notification(['Error'],['Not allowed'],[500])
+                }
+            } else {
+                notification(['Error'],['No text'],[500])
+            }
+        }
+    }
+
+    Button Back_B {
+        String text := ['Back']
+        event onClick {
+            back
+        }
+    }
+}

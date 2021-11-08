@@ -1,0 +1,25 @@
+Window InitWindow {
+    Button Init_b {
+        String text:= ['Init']
+        Person adminUser
+        event onClick {
+            adminUser := [Person.allInstances()->any(c|c.username.equalsIgnoreCase('admin'))]
+            if [ $adminUser$.oclIsUndefined() ] {
+               newUser := new Person
+               [$newUser$.name]:=['admin']
+               [$newUser$.surname]:=['admin']
+               [$newUser$.username]:=['admin']
+               [$newUser$.password]:=['admin']
+               [$newUser$.role]:=[Role::ADMIN]
+            }
+            open LoginWindow(role:[Role::NONE])
+        }
+    }
+
+    Button Evaluation_B {
+        String text:= ['Evaluation']
+        event onClick {
+            open EvaluationWindow(role:[Role::SYSTEM])
+        }
+    }
+}
