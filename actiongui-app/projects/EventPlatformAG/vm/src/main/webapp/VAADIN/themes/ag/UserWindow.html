@@ -1,0 +1,64 @@
+<!--
+-->
+<!DOCTYPE html>
+<html style="overflow: hidden; height: 100% ; width: 100% ;">
+    <head>
+        <title>UserWindow</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link type="text/css" rel="stylesheet" href="styles.css">
+        
+        <script type="text/javascript">
+            <!--
+            function timedRefresh(timedoutperiod) {
+                setTimeout("location.reload(true);", timedoutperiod);
+            }
+            //-->
+        </script>
+    
+    </head>
+    <body style="overflow: hidden; height: 100% ; width: 100% ;"  onload="Javascript:timedRefresh(5000);">
+        <div class="v-app v-theme-ag v-app-ViewerApplication">
+            <div class="v-view" >
+                <div class="v-csslayout UserWindow">
+                    <div class="v-panel Name_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Name_L</div>
+                    </div>
+                    <input class="v-textfield Name_TF" type="text" value="Name_TF">
+                    <div class="v-panel Surname_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Surname_L</div>
+                    </div>
+                    <input class="v-textfield Surname_TF" type="text" value="Surname_TF">
+                    <div class="v-panel Username_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Username_L</div>
+                    </div>
+                    <div class="v-panel Entityusername_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Entityusername_L</div>
+                    </div>
+                    <div class="v-panel Password_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Password_L</div>
+                    </div>
+                    <input class="v-textfield Password_PF" type="text" value="Password_PF">
+                    <div class="v-panel Role_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Role_L</div>
+                    </div>
+                    <div class="v-select Role_CB">
+                        <select class="v-select-select" size="1">
+                            <option value="1" selected="selected">Role_CB</option>
+                            <option value="2">UserWindow.Role_CB</option>
+                            <option value="3">Role_CB</option>
+                        </select>
+                    </div>
+                    <button class="v-nativebutton Update_B" type="button">
+                        <span class="v-nativebutton-caption">Update_B</span>
+                    </button>
+                    <button class="v-nativebutton Categories_B" type="button">
+                        <span class="v-nativebutton-caption">Categories_B</span>
+                    </button>
+                    <button class="v-nativebutton Back_B" type="button">
+                        <span class="v-nativebutton-caption">Back_B</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

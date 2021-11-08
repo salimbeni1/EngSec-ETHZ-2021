@@ -1,0 +1,46 @@
+<!--
+-->
+<!DOCTYPE html>
+<html style="overflow: hidden; height: 100% ; width: 100% ;">
+    <head>
+        <title>MessageBoardWindow</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link type="text/css" rel="stylesheet" href="styles.css">
+        
+        <script type="text/javascript">
+            <!--
+            function timedRefresh(timedoutperiod) {
+                setTimeout("location.reload(true);", timedoutperiod);
+            }
+            //-->
+        </script>
+    
+    </head>
+    <body style="overflow: hidden; height: 100% ; width: 100% ;"  onload="Javascript:timedRefresh(5000);">
+        <div class="v-app v-theme-ag v-app-ViewerApplication">
+            <div class="v-view" >
+                <div class="v-csslayout MessageBoardWindow">
+                    <div class="v-panel Posts_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Posts_L</div>
+                    </div>
+                    <div class="v-csslayout Table_Posts_T" style="background-color: white; border-width: 2px;border-color: black; border-style: dotted;">
+                        <div style="margin-left: auto; margin-right: auto; width: 5em; font-size: large">Table_Posts_T</div>
+                    </div>
+                    <button class="v-nativebutton DeletePost_B" type="button">
+                        <span class="v-nativebutton-caption">DeletePost_B</span>
+                    </button>
+                    <button class="v-nativebutton Report_B" type="button">
+                        <span class="v-nativebutton-caption">Report_B</span>
+                    </button>
+                    <input class="v-textfield Post_TF" type="text" value="Post_TF">
+                    <button class="v-nativebutton Post_B" type="button">
+                        <span class="v-nativebutton-caption">Post_B</span>
+                    </button>
+                    <button class="v-nativebutton Back_B" type="button">
+                        <span class="v-nativebutton-caption">Back_B</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -10,7 +10,7 @@
                 password and url are mandatory, but it depends on each datasource implementation-->
                 <!--To set a parameter use the following sintaxys:-->
                 <!--<Set name="paramName">paramValue</Set> -->
-                <Set name="Url">jdbc:mysql://localhost:3306/EventPlatformAG</Set> <!--TODO: write here your database url -->
+                <Set name="Url">jdbc:mysql://mysql:3306/EventPlatformAG</Set> <!--TODO: write here your database url -->
                 <Set name="User">root</Set> <!--TODO: write here your database user name-->
                 <Set name="Password">actiongui</Set> <!--TODO: write here your database password-->
             </New>

@@ -1,0 +1,44 @@
+<!--
+-->
+<!DOCTYPE html>
+<html style="overflow: hidden; height: 100% ; width: 100% ;">
+    <head>
+        <title>LoginWindow</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link type="text/css" rel="stylesheet" href="styles.css">
+        
+        <script type="text/javascript">
+            <!--
+            function timedRefresh(timedoutperiod) {
+                setTimeout("location.reload(true);", timedoutperiod);
+            }
+            //-->
+        </script>
+    
+    </head>
+    <body style="overflow: hidden; height: 100% ; width: 100% ;"  onload="Javascript:timedRefresh(5000);">
+        <div class="v-app v-theme-ag v-app-ViewerApplication">
+            <div class="v-view" >
+                <div class="v-csslayout LoginWindow">
+                    <div class="v-panel Welcome_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Welcome_L</div>
+                    </div>
+                    <div class="v-panel Username_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Username_L</div>
+                    </div>
+                    <input class="v-textfield Username_TF" type="text" value="Username_TF">
+                    <div class="v-panel Password_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Password_L</div>
+                    </div>
+                    <input class="v-textfield Password_TF" type="text" value="Password_TF">
+                    <button class="v-nativebutton Login_B" type="button">
+                        <span class="v-nativebutton-caption">Login_B</span>
+                    </button>
+                    <button class="v-nativebutton Register_B" type="button">
+                        <span class="v-nativebutton-caption">Register_B</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,64 @@
+<!--
+-->
+<!DOCTYPE html>
+<html style="overflow: hidden; height: 100% ; width: 100% ;">
+    <head>
+        <title>EventManagerWindow</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link type="text/css" rel="stylesheet" href="styles.css">
+        
+        <script type="text/javascript">
+            <!--
+            function timedRefresh(timedoutperiod) {
+                setTimeout("location.reload(true);", timedoutperiod);
+            }
+            //-->
+        </script>
+    
+    </head>
+    <body style="overflow: hidden; height: 100% ; width: 100% ;"  onload="Javascript:timedRefresh(5000);">
+        <div class="v-app v-theme-ag v-app-ViewerApplication">
+            <div class="v-view" >
+                <div class="v-csslayout EventManagerWindow">
+                    <div class="v-panel Title_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Title_L</div>
+                    </div>
+                    <input class="v-textfield Title_TF" type="text" value="Title_TF">
+                    <div class="v-panel Description_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Description_L</div>
+                    </div>
+                    <input class="v-textfield Description_TF" type="text" value="Description_TF">
+                    <div class="v-panel Location_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Location_L</div>
+                    </div>
+                    <input class="v-textfield Location_TF" type="text" value="Location_TF">
+                    <span class="v-checkbox Private_BF">
+                        <input type="checkbox" value="on">
+                        <label>Private_BF</label>
+                    </span>
+                    <div class="v-panel Date_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Date_L</div>
+                    </div>
+                    <div class="Date_DF" style="background-color: white; border-width: 2px;border-color: black; border-style: dotted; width: 242px; height: 156px">
+                        <div style="margin-left: auto; margin-right: auto; width: 5em; font-size: large">Date_DF</div>
+                    </div>
+                    <div class="v-panel Category_L v-panel-light light" style="overflow: hidden; width: 100% ;">
+                        <div class="v-captiontext">Category_L</div>
+                    </div>
+                    <div class="v-csslayout Table_Category_T" style="background-color: white; border-width: 2px;border-color: black; border-style: dotted;">
+                        <div style="margin-left: auto; margin-right: auto; width: 5em; font-size: large">Table_Category_T</div>
+                    </div>
+                    <button class="v-nativebutton Update_B" type="button">
+                        <span class="v-nativebutton-caption">Update_B</span>
+                    </button>
+                    <button class="v-nativebutton Manage_B" type="button">
+                        <span class="v-nativebutton-caption">Manage_B</span>
+                    </button>
+                    <button class="v-nativebutton Back_B" type="button">
+                        <span class="v-nativebutton-caption">Back_B</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

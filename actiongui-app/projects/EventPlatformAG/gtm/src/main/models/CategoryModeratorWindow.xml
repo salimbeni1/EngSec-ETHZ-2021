@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ns1:window-layout
+    ns1:id="CategoryModeratorWindow"
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+    xmlns:ns1='http://actiongui.org/schemes/ag-layout/2.4'
+    xsi:schemaLocation='http://actiongui.org/schemes/ag-layout/2.4 http://actiongui.org/schemes/ag-layout/2.4/schema.xsd'>
+    
+    <ns1:line-layout orientation="horizontal" ns1:height="100%">
+        <ns1:entry expand-ratio="1">
+            <ns1:line-layout orientation="horizontal"/>
+        </ns1:entry>
+        <ns1:entry>
+            <ns1:line-layout orientation="vertical" ns1:height="100%" ns1:width="500px">
+                <ns1:entry expand-ratio="1">
+                    <ns1:line-layout orientation="horizontal"/>
+                </ns1:entry>
+                <ns1:entry>
+                    <ns1:line-layout orientation="vertical" ns1:height="auto" ns1:width="100%">
+                        <ns1:entry expand-ratio="1">
+                            <ns1:line-layout orientation="horizontal"/>
+                        </ns1:entry>
+                        <ns1:entry>
+                            <ns1:line-layout orientation="vertical" ns1:height="auto" ns1:width="100%">
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="Category_L" ns1:width="100%" ns1:height="23px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:table ns1:id="Table_Mods_T" ns1:width="100%" ns1:height="100px">
+                                        <ns1:column>
+                                            <ns1:widget ns1:id="mods" ns1:width="100%" ns1:height="23px"/>
+                                        </ns1:column>
+                                    </ns1:table>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="Remove_B" ns1:width="100%" ns1:height="auto"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:table ns1:id="Table_Candidates_T" ns1:width="100%" ns1:height="100px">
+                                        <ns1:column>
+                                            <ns1:widget ns1:id="mods" ns1:width="100%" ns1:height="23px"/>
+                                        </ns1:column>
+                                    </ns1:table>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="Add_B" ns1:width="100%" ns1:height="auto"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="View_B" ns1:width="100%" ns1:height="auto"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:table ns1:id="Table_Subs_T" ns1:width="100%" ns1:height="100px">
+                                        <ns1:column>
+                                            <ns1:widget ns1:id="username" ns1:width="100%" ns1:height="23px"/>
+                                        </ns1:column>
+                                    </ns1:table>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="Posts_L" ns1:width="100%" ns1:height="23px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:table ns1:id="Table_Posts_T" ns1:width="100%" ns1:height="100px">
+                                        <ns1:column>
+                                            <ns1:widget ns1:id="content" ns1:width="100%" ns1:height="23px"/>
+                                        </ns1:column>
+                                        <ns1:column>
+                                            <ns1:widget ns1:id="reported" ns1:width="100%" ns1:height="23px"/>
+                                        </ns1:column>
+                                        <ns1:column>
+                                            <ns1:widget ns1:id="author" ns1:width="100%" ns1:height="23px"/>
+                                        </ns1:column>
+                                        <ns1:column>
+                                            <ns1:widget ns1:id="locked" ns1:width="100%" ns1:height="23px"/>
+                                        </ns1:column>
+                                    </ns1:table>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="DeletePost_B" ns1:width="100%" ns1:height="auto"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="Review_B" ns1:width="100%" ns1:height="auto"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="Lock_B" ns1:width="100%" ns1:height="auto"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="Clear_B" ns1:width="100%" ns1:height="auto"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:widget ns1:id="Back_B" ns1:width="100%" ns1:height="auto"/>
+                                </ns1:entry>
+                                <ns1:entry>
+                                    <ns1:line-layout orientation="horizontal" ns1:height="10px"/>
+                                </ns1:entry>
+                            </ns1:line-layout>
+                        </ns1:entry>
+                        <ns1:entry expand-ratio="1">
+                            <ns1:line-layout orientation="horizontal"/>
+                        </ns1:entry>
+                    </ns1:line-layout>
+                </ns1:entry>
+                <ns1:entry expand-ratio="1">
+                    <ns1:line-layout orientation="horizontal"/>
+                </ns1:entry>
+            </ns1:line-layout>
+        </ns1:entry>
+        <ns1:entry expand-ratio="1">
+            <ns1:line-layout orientation="horizontal"/>
+        </ns1:entry>
+    </ns1:line-layout>
+
+</ns1:window-layout>
+
