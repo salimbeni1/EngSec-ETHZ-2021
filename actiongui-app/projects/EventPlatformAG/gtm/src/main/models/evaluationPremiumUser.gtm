@@ -61,16 +61,24 @@ Window EvaluationPremiumUserWindow {
             // Test Case 2: Create a private event
             // Should PASS
             try {
+
+                //notification(['Error'],['1'],[500])
+
                 newEventTestPremiumPrivate := new Event
                 [$EvaluationPremiumUserWindow.caller$.events] += [$newEventTestPremiumPrivate$]
                 [$newEventTestPremiumPrivate$.managedBy] += [$EvaluationPremiumUserWindow.caller$]
                 [$newEventTestPremiumPrivate$.attendants] += [$EvaluationPremiumUserWindow.caller$]
+
+                //notification(['Error'],['1.1'],[500])
 
                 [$newEventTestPremiumPrivate$.title] := ['Test event premium private']
                 [$newEventTestPremiumPrivate$.private] := [true]
                 [$newEventTestPremiumPrivate$.description] := ['Test description']
                 [$newEventTestPremiumPrivate$.date] := [$testDate$]
                 [$newEventTestPremiumPrivate$.location] := ['Test location']
+
+                //notification(['Error'],['1.2'],[500])
+
                 [$newEventTestPremiumPrivate$.categories] += [$EvaluationPremiumUserWindow.testCategoryOne$]
 
                 EvaluationPremiumUserWindow.passed := [$EvaluationPremiumUserWindow.passed$ + 1]

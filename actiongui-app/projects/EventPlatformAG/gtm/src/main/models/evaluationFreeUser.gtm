@@ -41,19 +41,34 @@ Window EvaluationFreeUserWindow {
             // Test Case 1: Create a public event
             // Should PASS
             try {
+                
+                //notification(['Error'],['1'],[500])
+                //notification(['Error'],['1.1'],[500])
+
                 newEventTest := new Event
+                //notification(['Error'],['1.2'],[500])
                 // Alternate between person and event association ends to probe
                 // symmetric implementation of constraints.
                 [$EvaluationFreeUserWindow.caller$.events] += [$newEventTest$]
+                //notification(['Error'],['2'],[500])
                 [$EvaluationFreeUserWindow.caller$.manages] += [$newEventTest$]
+                //notification(['Error'],['3'],[500])
                 [$newEventTest$.attendants] += [$EvaluationFreeUserWindow.caller$]
+
+                //notification(['Error'],['owner , manager , attendant'],[500])
 
                 [$newEventTest$.title] := ['Test event']
                 [$newEventTest$.private] := [false]
                 [$newEventTest$.description] := ['Test description']
                 [$newEventTest$.date] := [$testDate$]
                 [$newEventTest$.location] := ['Test location']
+                
+                //notification(['Error'],['end'],[500])
+
                 [$EvaluationFreeUserWindow.testCategoryOne$.events] += [$newEventTest$]
+
+            
+                //notification(['Error'],['real end'],[500])
 
                 EvaluationFreeUserWindow.passed := [$EvaluationFreeUserWindow.passed$ + 1]
             } catch (SecurityException) {

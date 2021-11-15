@@ -30,6 +30,10 @@ Next, to create the database, inside the container go to the shared directory an
     cd /usr/local/actiongui/phil
     ./createDB.sh
 
+or directly 
+
+    cat ./vm/target/generated-sources/sql/db.sql | mysql -u'root' -p'actiongui' -h mysql -P 3306
+
 Finally, to execute the compiled web application, go to the `phil/vm` directory:
 
     cd /usr/local/actiongui/phil/vm
