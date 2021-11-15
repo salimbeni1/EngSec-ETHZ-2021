@@ -6,9 +6,9 @@ role NONE {
     create
 
     // When a new user registers, they only set their username and password.
-    update(username) // constrainedBy [self.username = null ] // and target.role = Role::FREEUSER]
-    update(password) // constrainedBy [self.password = null ] // and target.role = Role::FREEUSER]
-    update(role) constrainedBy  [value = Role::FREEUSER]
+    update(username) constrainedBy [self.username = null ] // and target.role = Role::FREEUSER]
+    update(password) constrainedBy [self.password = null ] // and target.role = Role::FREEUSER]
+    update(role) constrainedBy  [self.role = null and value = Role::FREEUSER]
 
     // The categories moderated by a user can be seen by everyone.
     read(moderates)
@@ -57,7 +57,7 @@ role FREEUSER extends NONE {
     read(name) , read(surname) , read(username) , read(role)
 
     // Users can edit their password, and their own core information except their role.
-    update(name) , update(surname) , update(username) ,update(password)
+    update(name) , update(surname) , update(username) ,update(password) constrainedBy [ self = caller ]
 
     // Each user can see the events they own, manage, attend, or requested access to,
     read(events) , read(manages) , read(attends) , read(requests)
@@ -233,7 +233,7 @@ role PREMIUMUSER extends FREEUSER {
   Event {
 
     update(private)
-    
+
 
 
   }
