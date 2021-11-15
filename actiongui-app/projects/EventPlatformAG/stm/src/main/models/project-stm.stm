@@ -1,12 +1,257 @@
-role NONE {}
+role NONE {
+  Person {
+    //NOT TO INHERIT
+    // Users who are not logged in yet can register (create new persons), but only as free users.
+    create // constrainedBy [target.role = Role::FREEUSER and caller.role = Role::NONE]
 
-role FREEUSER {}
+    read(password), read(username), read(role) //constrainedBy [self.role = Role::NONE or self = caller] //  and self = caller and self.role = Role::FREEUSER
+    update(username), update(password) constrainedBy [self.role = null] //constrainedBy [self.role = Role::NONE]
+    update(role) constrainedBy [value = Role::FREEUSER and self.role = null] //constrainedBy [value = Role::FREEUSER and self.role = Role::NONE]
+  }
+  Event {
+    // Everyone (i.e., also users who are not logged in) can read a public event’s core information (title, description, location, date, owner) and any event’s categories.
+    read(title), read(description), read(location), read(date), read(owner), read(categories) constrainedBy [self.private = false]
 
-role PREMIUMUSER {}
+    read(private)
+  }
+}
 
-role MODERATOR {}
+role FREEUSER extends NONE {
+  Person {
+    // Users can see any other user’s core information (name, surname, username, role).
+    read(name), read(surname), read(username), read(role)
 
-role ADMIN {}
+    // Users can edit their password, and their own core information except their role.
+    read(password), update(password), update(name), update(surname), update(username) constrainedBy [self = caller]
+    
+    // Each user can see the events they own, manage, attend, or requested access to, 
+    // the posts they authored, the categories they subscribed to, 
+    // and the invitations they received or sent.
+    read(events), read(manages), read(requests), read(authored), read(subscriptions), read(invites) constrainedBy [self = caller]
+    read(invitations)
+    //read(attends) //constrainedBy [self = caller] // [self = caller or invitations->exit(i|i.event->exist(m|managedBy->exist))]
+
+    // The categories moderated by a user can be seen by everyone.
+    read(moderates)
+
+    // Sym: Only managers of an event can edit the core information with the exception of the owner who cannot be changed but only set initially
+    add(events), remove(events) constrainedBy [target.managedBy->includes(caller) or target.owner = self or target.owner = null] // and target.private = false
+
+    // Sym: Only the owner can promote attendants to managers and demote managers to attendants.
+    remove(manages), add(manages) constrainedBy [caller = target.owner] // caller = target.owner and caller <> self
+
+    // Sym: Everyone besides the owner can remove themselves from attending the event
+    // Sym: Managers can remove attendants from the event, but only if the attendant is not a manager.
+    read(attends) constrainedBy [self = caller] // or self.attends->exists(e|e.managedBy->exists(caller))
+    remove(attends) constrainedBy [(target.managedBy->includes(caller) and caller <> self and self.manages->excludes(target)) or (self = caller and self.manages->excludes(target))]
+
+    // Sym: Everyone can add themselves as attendant to an event, if they have been invited.
+    // Sym: They also can add those who requested to join an event as attendants.
+    // Sym: Duplicate : An invited user can accept or decline the invitation (in both cases, the invitation is deleted).
+    add(attends) constrainedBy [(self = caller and self.invitations->exists(i|i.event = target)) or (target.managedBy->includes(caller) and self.requests->includes(target))] // self.attendants->exludes(target)
+
+    // Sym: Everyone can request to join a public event and cancel their requests.
+    // Sym: Duplicate : Only event managers can invite users to events they manage, cancel invitations, and accept and deny requests.
+    add(requests) constrainedBy [target.private = false and self = caller]
+    remove(requests) constrainedBy [(target.private = false and self = caller) or (target.managedBy->includes(caller))] //  and target.requesters->includes(self)
+
+    // Sym: Only event managers can invite users to events they manage, cancel invitations, and accept and deny requests.
+    add(invitations) constrainedBy [target.event.managedBy->includes(caller) and target.invitee.role <> Role::NONE]
+    // Sym: An invited user can accept or decline the invitation (in both cases, the invitation is deleted).
+    remove(invitations) constrainedBy [(target.event.managedBy->includes(caller) and target.invitee = self) or caller = target.invitee] //  and self.invitations->exists(i|i.invitee = target.invitee)
+    // Sym: Invitations are read-only, i.e., once they have been assigned, the values of invitee, invitedBy, and event cannot be changed.
+    // add(invitations) constrainedBy [target.event.managedBy->includes(caller)] //nur manager können invitation sehen // target.event.managedBy->includes(self) or 
+    add(invites) constrainedBy [target.event.managedBy->includes(self) or target.event.managedBy->includes(caller)]
+    
+  }
+  Event {
+    // Users (i.e., anyone who is logged in) can create public events.
+    create // constrainedBy [self.owner = caller and self.private = false]
+    update(private) constrainedBy [self.owner = caller and value = false]
+
+    // add(attendants) constrainedBy [caller = self.owner or target = caller]
+    //update(private) constrainedBy [value = false]
+    
+
+    // For private events, only its attendants and users invited to the event can read that information.
+    read(title), read(description), read(location), read(date), read(owner), read(categories) constrainedBy [((self.attendants->includes(caller) or self.invitations->exists(i|i.invitee = caller)) and self.private = true) or self.private = false]
+
+    // Everyone besides the owner can remove themselves from attending the event
+    // Managers can remove attendants from the event, but only if the attendant is not a manager.
+    remove(attendants) constrainedBy [(self.owner <> caller and self.attendants->includes(target) and caller = target and self.managedBy->excludes(caller)) or (self.managedBy->includes(caller) and self.managedBy->excludes(target) and caller <> target)]
+
+    // Everyone can add themselves as attendant to an event, if they have been invited.
+    // They also can add those who requested to join an event as attendants.
+    // Duplicate : An invited user can accept or decline the invitation (in both cases, the invitation is deleted).
+    add(attendants) constrainedBy [(caller = self.owner or target = caller) or (target = caller and self.invitations->exists(i|i.invitee = target)) or (self.managedBy->includes(caller) and self.requesters->includes(target))] // self.attendants->exludes(target)
+
+    // Everyone can request to join a public event and cancel their requests.
+    // Duplicate : Only event managers can invite users to events they manage, cancel invitations, and accept and deny requests.
+    add(requesters) constrainedBy [self.private = false and target = caller]
+    remove(requesters) constrainedBy [(self.private = false and target = caller) or (self.managedBy->includes(caller) and self.requesters->includes(target))]
+    
+    // Only attendants can see an event’s message board .... and post to the event’s message board
+    read(messageBoard) constrainedBy [self.attendants->includes(caller)]
+    add(messageBoard) constrainedBy [self.attendants->includes(caller) and target.author = caller]
+
+    // Managers and the authors can remove posts.
+    remove(messageBoard) constrainedBy [self.managedBy->includes(caller) or target.author = caller]
+
+    // For public events, users can see who is attending them and who is managing them.
+    // For private events, only attendants and those who have an invitation pending can read that information.
+    read(attendants), read(managedBy) constrainedBy [self.private = false or (self.private = true and (self.attendants->includes(caller) or self.invitations->exists(i|i.invitee = caller)))]
+
+    // Only managers of an event can edit the core information with the exception of the owner who cannot be changed but only set initially
+    update(title), update(description), update(location), update(date) constrainedBy [self.managedBy->includes(caller)]
+    update(owner) constrainedBy [self.owner = null and value = caller] //  and value = caller and self.managedBy->includes(caller) 
+    
+    // Only the owner can promote attendants to managers and demote managers to attendants.
+    add(managedBy), remove(managedBy) constrainedBy [self.owner = caller and self.attendants->includes(target)] // and self.attendants->includes(target)
+
+    // Only event managers can invite users to events they manage, cancel invitations, and accept and deny requests.
+    add(invitations) constrainedBy [self.managedBy->includes(caller) and target.invitee.role <> Role::NONE]
+    // An invited user can accept or decline the invitation (in both cases, the invitation is deleted).
+    remove(invitations) constrainedBy [self.managedBy->includes(caller) or (caller = target.invitee and self.invitations->exists(i|i.invitee = target.invitee))] //  and self.attendants->exludes(target.invitee)
+
+    // Managers can see all invitations and requests for the respective event.
+    read(invitations), read(requesters) constrainedBy [self.managedBy->includes(caller)]
+
+    
+
+  }
+  Category {
+    // Users can see who moderates a category.
+    read(moderators)
+
+    
+
+    //Categories can be seen and their name, events and moderators can be read by everyone, but only moderators of a category can see its subscribers.
+    read(name), read(events)
+    read(subscribers) constrainedBy [self.moderators->includes(caller)]
+
+    add(events) 
+    
+  }
+  Invite {
+    create
+    // Invitations are read-only, i.e., once they have been assigned, the values of invitee, invitedBy, and event cannot be changed.
+    update(invitee) constrainedBy [self.invitee = null] //nur manager können invitation sehen
+    update(invitedBy) constrainedBy [self.invitedBy = null] 
+    update(event) constrainedBy [self.event = null]
+    read(invitee), read(invitedBy), read(event) constrainedBy [self.event.managedBy->includes(caller)]
+  }
+  Post {
+    create
+    // Only attendants can ... read a post’s core information (author, content, postedAt) ....
+    // ... and all information of locked posts can only be read by those who can review the respective post.
+    read(author), read(content), read(postedAt), read(flagged) constrainedBy [self.postedAt.attendants->includes(caller) and self.locked = false or self.locked = true and self.postedAt.managedBy->includes(caller)]
+
+    // The author, event, and content of a post can only be set initially.
+    update(author) constrainedBy [self.author = null and caller = value]
+    // Sym: Only attendants can see an event’s message board .... and post to the event’s message board
+    // Sym: Managers and the authors can remove posts.
+    update(postedAt) constrainedBy [(self.postedAt = null and (self.postedAt.attendants->includes(self.author))) or (self.postedAt = null and (self.postedAt.managedBy->includes(caller) or self.author = caller))]
+    update(content) constrainedBy [self.content = null]
+
+    // Anyone who can read a post’s content, can flag it for review. (only attendants)
+    // When a post is reviewed positively, its flag is cleared. (managers are reviewers)
+    // If a post is reviewed negatively, its flag is cleared and the post is locked.
+    update(flagged) constrainedBy [(self.postedAt.attendants->includes(caller) and value = true) or (self.postedAt.managedBy->includes(caller))]
+    update(locked) constrainedBy [self.postedAt.managedBy->includes(caller) and value = true]
+
+    // Those who can review a post can see whether it has been flagged and read its content and author.
+
+    // A post’s lock, ..... can only be read by those who can review the respective post.
+    read(locked) constrainedBy [self.postedAt.managedBy->includes(caller)]
+
+    // Locked posts cannot be deleted.
+    // delete constrainedBy [locked = false]
+
+  }
+}
+
+role PREMIUMUSER extends FREEUSER {
+  Person {
+    // complement to -> In addition, premium users can ... and create private events.
+    add(events), add(manages), add(attends) constrainedBy [self = caller and (target.private = false or target.private = true)]
+    add(subscriptions), remove(subscriptions) constrainedBy [self = caller]
+  }
+  Event {
+    // In addition, premium users can ... and create private events.
+    create // constrainedBy [owner = caller]// constrainedBy [self.private = true] // self.owner = caller and 
+    update(private) constrainedBy [self.owner = caller and (value = false or value = true)]
+  }
+  Category {
+    // In addition, premium users can subscribe to and unsubscribe from categories ....
+    add(subscribers), remove(subscribers) constrainedBy [target = caller]
+  }
+}
+
+role MODERATOR extends PREMIUMUSER {
+  Event {
+    read(messageBoard) constrainedBy [self.categories->exists(m|m.moderators->includes(caller))]
+
+    // and remove a category they moderate from an event
+    remove(categories) constrainedBy [target.moderators->includes(caller)]
+  }
+  Category {
+    // For events in a category they moderate,
+    read(events), remove(events) constrainedBy [self.moderators->includes(caller)]
+
+    // Moderators can decide to remove themselves as the moderator of a category.
+    remove(moderators) constrainedBy [self.moderators->includes(caller) and target = caller]
+  }
+  Post {
+    // They can access posts as if they were an attendant, review posts ...... .
+    read(postedAt)
+    read(author), read(content), read(flagged), read(locked), update(flagged) constrainedBy [self.postedAt.categories->exists(m|m.moderators->includes(caller))]
+  }
+}
+
+role ADMIN extends MODERATOR {
+  Person {
+    // Additionally, administrators can delete users and .... have been locked.
+    delete constrainedBy [caller <> self]
+
+    // Administrators can also edit any users password and role.
+    update(password), update(role) constrainedBy [caller <> self]
+
+    // Sym: They can add and remove users with the role moderator as moderators of categories.
+    add(moderates), remove(moderates)
+  }
+  Category {
+    // Administrators have the same permissions as moderators, and are regarded as moderators of every category.
+
+    // They can create and delete categories, edit their names, ...... .
+    create
+    delete
+    update(name)
+
+    // They can add and remove users with the role moderator as moderators of categories.
+    add(moderators), remove(moderators) constrainedBy [target.role = Role::MODERATOR]
+
+    // Sym: and remove any category from any event.
+    remove(events) 
+    
+  }
+  Post {
+    read(author), read(content), read(flagged), read(locked), read(postedAt)
+
+    // Only administrators can clear locks of posts.
+    update(locked) constrainedBy [value = false]
+
+    update(flagged) constrainedBy [value = false]
+
+    // Additionally, administrators can delete ... and posts that have been locked.
+    delete constrainedBy [self.locked = true]
+
+  }
+  Event {
+    // and remove any category from any event.
+    remove(categories)
+    read(messageBoard)
+  }
+}
 
 // The SYSTEM role is required for test data setup
 role SYSTEM {
