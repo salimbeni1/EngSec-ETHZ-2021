@@ -44,8 +44,11 @@ Window EvaluationFreeUserWindow {
                 newEventTest := new Event
                 // Alternate between person and event association ends to probe
                 // symmetric implementation of constraints.
+                notification(['Error'],['1'],[500])
                 [$EvaluationFreeUserWindow.caller$.events] += [$newEventTest$]
+                notification(['Error'],['2'],[500])
                 [$EvaluationFreeUserWindow.caller$.manages] += [$newEventTest$]
+                notification(['Error'],['3'],[500])
                 [$newEventTest$.attendants] += [$EvaluationFreeUserWindow.caller$]
 
                 [$newEventTest$.title] := ['Test event']

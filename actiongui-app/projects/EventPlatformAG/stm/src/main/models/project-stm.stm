@@ -74,7 +74,8 @@ role FREEUSER extends NONE {
     
 
     // For private events, only its attendants and users invited to the event can read that information.
-    read(title), read(description), read(location), read(date), read(owner), read(categories) constrainedBy [((self.attendants->includes(caller) or self.invitations->exists(i|i.invitee = caller)) and self.private = true) or self.private = false]
+    read(title), read(description), read(location), read(date), read(categories) constrainedBy [((self.attendants->includes(caller) or self.invitations->exists(i|i.invitee = caller)) and self.private = true) or self.private = false]
+    read(owner) constrainedBy [((self.attendants->includes(caller) or self.invitations->exists(i|i.invitee = caller) or self.owner = null) and self.private = true) or self.private = false]
 
     // Everyone besides the owner can remove themselves from attending the event
     // Managers can remove attendants from the event, but only if the attendant is not a manager.
@@ -99,14 +100,14 @@ role FREEUSER extends NONE {
 
     // For public events, users can see who is attending them and who is managing them.
     // For private events, only attendants and those who have an invitation pending can read that information.
-    read(attendants), read(managedBy) constrainedBy [self.private = false or (self.private = true and (self.attendants->includes(caller) or self.invitations->exists(i|i.invitee = caller)))]
+    read(attendants), read(managedBy) constrainedBy [self.private = false or (self.private = true and (self.attendants->includes(caller) or self.invitations->exists(i|i.invitee = caller) or self.owner = caller))]
 
     // Only managers of an event can edit the core information with the exception of the owner who cannot be changed but only set initially
     update(title), update(description), update(location), update(date) constrainedBy [self.managedBy->includes(caller)]
     update(owner) constrainedBy [self.owner = null and value = caller] //  and value = caller and self.managedBy->includes(caller) 
     
     // Only the owner can promote attendants to managers and demote managers to attendants.
-    add(managedBy), remove(managedBy) constrainedBy [self.owner = caller and self.attendants->includes(target)] // and self.attendants->includes(target)
+    add(managedBy), remove(managedBy) constrainedBy [self.owner = caller] // and self.attendants->includes(target)
 
     // Only event managers can invite users to events they manage, cancel invitations, and accept and deny requests.
     add(invitations) constrainedBy [self.managedBy->includes(caller) and target.invitee.role <> Role::NONE]
@@ -173,13 +174,13 @@ role FREEUSER extends NONE {
 role PREMIUMUSER extends FREEUSER {
   Person {
     // complement to -> In addition, premium users can ... and create private events.
-    add(events), add(manages), add(attends) constrainedBy [self = caller and (target.private = false or target.private = true)]
+    // add(manages), add(attends) constrainedBy [self = caller and (target.private = false or target.private = true)] // add(events),
     add(subscriptions), remove(subscriptions) constrainedBy [self = caller]
   }
   Event {
     // In addition, premium users can ... and create private events.
     create // constrainedBy [owner = caller]// constrainedBy [self.private = true] // self.owner = caller and 
-    update(private) constrainedBy [self.owner = caller and (value = false or value = true)]
+    update(private) constrainedBy [self.owner = caller] //  and (value = false or value = true)
   }
   Category {
     // In addition, premium users can subscribe to and unsubscribe from categories ....
