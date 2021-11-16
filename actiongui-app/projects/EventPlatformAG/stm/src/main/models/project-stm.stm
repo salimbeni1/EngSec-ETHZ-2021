@@ -208,7 +208,7 @@ role FREEUSER extends NONE {
       self.postedAt.managedBy->includes(caller) 
        ]
     
-    read(locked)
+    // read(locked)
 
     // The author, event, and content of a post can only be set initially.
     update(author) constrainedBy [self.author = null] 
@@ -298,7 +298,8 @@ role MODERATOR extends PREMIUMUSER{
       self.locked = false and 
       self.postedAt.categories->exists(i | i.moderators->includes(caller) )
       ]
-    read(locked) , read(flagged) , update(flagged) constrainedBy [
+    // read(locked) ,
+    read(flagged) , update(flagged) constrainedBy [
       self.postedAt.categories->exists(i | i.moderators->includes(caller) )
     ]
     update(locked) constrainedBy [ 
@@ -329,9 +330,6 @@ role ADMIN extends MODERATOR{
     read(categories) , remove(categories) , add(categories)
 
     read(messageBoard)
-
-
-
   }
   Category {
     // They can create and delete categories, edit their names,
@@ -342,6 +340,8 @@ role ADMIN extends MODERATOR{
     // They can add and remove users with the role moderator as moderators of categories.
     add(moderators), remove(moderators) constrainedBy [target.role = Role::MODERATOR]
 
+    add(subscribers)
+    add(events)
     
   }
   Invite {
@@ -354,7 +354,8 @@ role ADMIN extends MODERATOR{
     // Additionally, administrators can review all posts.
     read(flagged) , update(flagged) 
     read(postedAt) , read(author) , read(content)
-    read(locked) , update(locked)
+    // read(locked) ,
+    update(locked)
 
   }
 
