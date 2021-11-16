@@ -64,15 +64,19 @@ role FREEUSER extends NONE {
     // the posts they authored, the categories they subscribed to, and the invitations they received or sent.
     read(authored) , read(subscriptions) , read(invitations) , read(invites)
 
-
+    add(invites) constrainedBy [target.event.managedBy->includes(self) or target.event.managedBy->includes(caller)]
 
     // TEST CASE 1 FREEUSER
-    add(events)
-    add(manages) constrainedBy [target.owner = caller]
+    add(events) constrainedBy [target.owner = self or target.owner = null]
+    remove(manages), add(manages) constrainedBy [target.owner = caller]
     add(attends)
 
     add(requests) constrainedBy [target.private = false]
 
+    // Sym: Only event managers can invite users to events they manage, cancel invitations, and accept and deny requests.
+    add(invitations) constrainedBy [target.event.managedBy->includes(caller)] //  and target.invitee.role <> Role::NONE
+    // Sym: An invited user can accept or decline the invitation (in both cases, the invitation is deleted).
+    remove(invitations) constrainedBy [(target.event.managedBy->includes(caller) and target.invitee = self) or (caller = target.invitee)] //  and target.invitee = self 
   }
 
 
@@ -84,8 +88,8 @@ role FREEUSER extends NONE {
 
     // For private events, only its attendants and users invited to the event can read event info 
     read(title) , read(description) , read(location) , read(date) , read(owner) , read(categories) constrainedBy [
-      (self.attendants->includes(caller) or self.invitations->exists( i | i.invitee = caller  )) and
-      self.private = true
+      ((self.attendants->includes(caller) or self.invitations->exists( i | i.invitee = caller  )) and
+      self.private = true) or self.private = false
       ]
 
 
@@ -99,13 +103,13 @@ role FREEUSER extends NONE {
     // For private events, only attendants and those who have an invitation pending can read that information
     read(managedBy) , read(attendants) constrainedBy [
       self.private = false or 
-      ( self.private = true and self.attendants->includes(caller) or self.invitations->exists( i | i.invitee = caller  ) )
+      ( self.private = true and (self.attendants->includes(caller) or self.invitations->exists( i | i.invitee = caller  )) )
       ]
 
 
     // Only the owner can promote attendants to managers and demote managers to attendants
-    add(managedBy) constrainedBy [target = self.owner or (caller = self.owner and self.attendants->includes(target)) ]
-    remove(managedBy) constrainedBy [caller = self.owner and not (caller = target)]
+    add(managedBy) constrainedBy [target = self.owner and caller = target or (caller = self.owner and self.attendants->includes(target)) ]
+    remove(managedBy) constrainedBy [caller = self.owner and not (caller = target) and self.attendants->includes(target)]
 
 
     // Managers can remove attendants from the event, but only if the attendant is not a manager
@@ -144,7 +148,7 @@ role FREEUSER extends NONE {
       ]
 
     // Managers can see all invitations and requests for the respective event
-    read(invitations) , read(requesters) constrainedBy [self.managedBy->includes(caller)]
+    read(invitations) , read(requesters) constrainedBy [self.managedBy->includes(caller) or self.invitations->exists(i | i.invitee = caller )] // or self.invitations->exists(i | i.invitee = caller)
 
     // Only attendants can see an event’s message board
     read(messageBoard) constrainedBy [self.attendants->includes(caller)]
@@ -185,8 +189,7 @@ role FREEUSER extends NONE {
     update(invitee) constrainedBy [ self.invitee = null ]
     update(invitedBy) constrainedBy [ self.invitee = null ]
     update(event) constrainedBy [ self.event = null ]
-
-      
+    read(invitee), read(invitedBy), read(event) constrainedBy [self.event.managedBy->includes(caller) or self.invitee = caller]
   }
 
   Post {
@@ -292,6 +295,9 @@ role ADMIN extends MODERATOR{
 
     // Administrators can also edit any users password and role.
     update(password) , update(role)
+
+    // Sym: They can add and remove users with the role moderator as moderators of categories.
+    add(moderates), remove(moderates) constrainedBy [self.role = Role::MODERATOR]
     
   }
   Event {
@@ -309,7 +315,7 @@ role ADMIN extends MODERATOR{
     update(name)
 
     // They can add and remove users with the role moderator as moderators of categories.
-    remove(moderators) constrainedBy [target.role = Role::MODERATOR]
+    add(moderators), remove(moderators) constrainedBy [target.role = Role::MODERATOR]
 
     
   }
