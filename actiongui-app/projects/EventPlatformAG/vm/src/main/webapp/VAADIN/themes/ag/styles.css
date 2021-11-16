@@ -11,14 +11,14 @@
 @import "EventUserWindow.css";
 @import "LoginWindow.css";
 @import "UserWindow.css";
-@import "EventCreateWindow.css";
 @import "EventManagerWindow.css";
+@import "EventCreateWindow.css";
 @import "EvaluationPremiumUserWindow.css";
 @import "EventListWindow.css";
 @import "InitWindow.css";
 @import "UserListWindow.css";
-@import "CategoryModeratorWindow.css";
 @import "UserEventWindow.css";
+@import "CategoryModeratorWindow.css";
 
 /* The following rule is to avoid resizeable text fields */
 .v-textarea {

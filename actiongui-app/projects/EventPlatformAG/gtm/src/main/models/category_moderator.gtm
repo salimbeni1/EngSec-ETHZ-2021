@@ -106,8 +106,13 @@ Window CategoryModeratorWindow {
         Set(Post) rows := [Post.allInstances()->select(
             p | p.postedAt.categories->includes($CategoryModeratorWindow.entity$)
         )]
+
+
         Post selected  := [null]
         columns {
+
+            
+
             ['Author'] : Label author {
                 event onView (text) {
                     try {
