@@ -35,6 +35,7 @@ role NONE {
 
   }
   Category {
+      read(moderators)
 
 
   }
@@ -60,9 +61,12 @@ role FREEUSER extends NONE {
     update(name) , update(surname) , update(username) ,update(password) constrainedBy [ self = caller ]
 
     // Each user can see the events they own, manage, attend, or requested access to,
-    read(events) , read(manages) , read(attends) , read(requests)
+    read(events) , read(manages) , read(attends) , read(requests) constrainedBy [caller = self]
     // the posts they authored, the categories they subscribed to, and the invitations they received or sent.
-    read(authored) , read(subscriptions) , read(invitations) , read(invites)
+    read(authored) , read(invitations) , read(invites) constrainedBy [caller = self]
+    read(subscriptions) constrainedBy [caller = self or caller.role = Role::ADMIN]
+
+    add(authored) constrainedBy [self = caller]
 
     add(invites) constrainedBy [self = caller and target.event.managedBy->includes(caller)]
 
@@ -184,7 +188,7 @@ role FREEUSER extends NONE {
     // Categories can be seen and their name, events and moderators can be read by everyone
     read(name) , read(events)
     // but only moderators of a category can see its subscribers.
-    read(subscribers) constrainedBy [self.moderators->includes(caller)]
+    read(subscribers) constrainedBy [(self <> null and self.moderators <> null and self.moderators->exists(c|c = caller))]
 
     // TEST 1 FREEUSER
     add(events)
@@ -284,7 +288,7 @@ role MODERATOR extends PREMIUMUSER{
     // remove a category they moderate from an event.
     remove(categories) constrainedBy [target.moderators->includes(caller)]
 
-    read(messageBoard) constrainedBy [ self.categories->exists(i | i.moderators->includes(caller)) ]
+    read(messageBoard) constrainedBy [ caller.moderates->intersection(self.categories)->size() > 0] // self.categories->exists(i | i.moderators->includes(caller)) ]
 
 
     
@@ -297,20 +301,17 @@ role MODERATOR extends PREMIUMUSER{
   }
 
   Post {
-
+    // self.postedAt.categories->exists(i | i.moderators->includes(caller) )
     // For every post, they can see at which event it was posted 
     // They can access posts as if they were an attendant, review posts and
     read(postedAt) , read(author) , read(content) constrainedBy [
       self.locked = false and 
-      self.postedAt.categories->exists(i | i.moderators->includes(caller) )
+      (caller.moderates->intersection(self.postedAt.categories))->size() > 0 
       ]
     read(locked) , read(flagged) , update(flagged) constrainedBy [
-      self.postedAt.categories->exists(i | i.moderators->includes(caller) )
+      (caller.moderates->intersection(self.postedAt.categories))->size() > 0
     ]
-    update(locked) constrainedBy [ 
-      value = true and 
-      self.postedAt.categories->exists(i | i.moderators->includes(caller) )
-      ]
+    update(locked) constrainedBy [value = true and (caller.moderates->intersection(self.postedAt.categories))->size() > 0]
 
   }
 
@@ -348,6 +349,7 @@ role ADMIN extends MODERATOR{
     // They can add and remove users with the role moderator as moderators of categories.
     add(moderators), remove(moderators) constrainedBy [target.role = Role::MODERATOR]
 
+    read(subscribers)
     
   }
   Invite {
@@ -355,7 +357,7 @@ role ADMIN extends MODERATOR{
   }
 
   Post {
-    delete
+    delete constrainedBy [self.locked = true]
 
     // Additionally, administrators can review all posts.
     read(flagged) , update(flagged) 
