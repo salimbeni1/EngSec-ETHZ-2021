@@ -151,9 +151,15 @@ role FREEUSER extends NONE {
     read(invitations) , read(requesters) constrainedBy [self.managedBy->includes(caller) or self.invitations->exists(i | i.invitee = caller )] // or self.invitations->exists(i | i.invitee = caller)
 
     // Only attendants can see an event’s message board
-    read(messageBoard) constrainedBy [self.attendants->includes(caller)]
+    read(messageBoard) constrainedBy [ self.attendants->includes(caller) ]
     // and post to the event’s message board.
-    add(messageBoard) constrainedBy [self.attendants->includes(caller) and target.author = caller]
+    add(messageBoard) constrainedBy [ self.attendants->includes(caller) ]
+    // Managers and the authors can remove posts
+    remove(messageBoard) constrainedBy [
+      (self.managedBy->includes(caller) or
+      target.author = caller ) and 
+      target.locked = false
+    ]
 
 
     // TEST 1 FREEUSER
@@ -205,20 +211,30 @@ role FREEUSER extends NONE {
     read(locked)
 
     // The author, event, and content of a post can only be set initially.
-    update(author) ,update(content) , update(postedAt) constrainedBy [self.author = null]
+    update(author) constrainedBy [self.author = null] 
+    update(content) constrainedBy [self.content = null] 
+    update(postedAt) constrainedBy [self.postedAt = null] 
 
     // Anyone who can read a post’s content, can flag it for review
     update(flagged) constrainedBy [ 
       (self.postedAt.attendants->includes(caller) and value = true) or
-      self.postedAt.managedBy->includes(caller)
+      self.postedAt.managedBy->includes(caller) or
+      (value = false and self.flagged = null)
       ]
 
     // Those who can review a post can see whether it has been flagged and read its content and author
     read(flagged) constrainedBy [self.postedAt.managedBy->includes(caller)]
-    update(locked) constrainedBy [self.postedAt.managedBy->includes(caller) and value = true]
+    update(locked) constrainedBy [
+      (self.postedAt.managedBy->includes(caller) and value = true) or 
+      (value = false and self.locked = null)
+      ]
 
     // Locked posts cannot be deleted
-    delete constrainedBy [self.locked = false]
+    delete constrainedBy [
+      self.locked = false and 
+      ( self.author = caller or
+      self.postedAt.managedBy->includes(caller) )
+      ]
 
   }
 
@@ -262,6 +278,8 @@ role MODERATOR extends PREMIUMUSER{
     // remove a category they moderate from an event.
     remove(categories) constrainedBy [target.moderators->includes(caller)]
 
+    read(messageBoard) constrainedBy [ self.categories->exists(i | i.moderators->includes(caller)) ]
+
 
     
   }
@@ -274,14 +292,19 @@ role MODERATOR extends PREMIUMUSER{
 
   Post {
 
-    // For every post, they can see at which event it was posted.
-    read(postedAt)
-    
+    // For every post, they can see at which event it was posted 
     // They can access posts as if they were an attendant, review posts and
-    read(author) , read(content) constrainedBy [self.locked = false]
-    read(flagged) 
-    update(flagged)
-    update(locked)
+    read(postedAt) , read(author) , read(content) constrainedBy [
+      self.locked = false and 
+      self.postedAt.categories->exists(i | i.moderators->includes(caller) )
+      ]
+    read(locked) , read(flagged) , update(flagged) constrainedBy [
+      self.postedAt.categories->exists(i | i.moderators->includes(caller) )
+    ]
+    update(locked) constrainedBy [ 
+      value = true and 
+      self.postedAt.categories->exists(i | i.moderators->includes(caller) )
+      ]
 
   }
 
@@ -303,8 +326,10 @@ role ADMIN extends MODERATOR{
   Event {
 
     // Administrators have the same permissions as moderators, and are regarded as moderators of every category
-    remove(categories)
-    add(categories)
+    read(categories) , remove(categories) , add(categories)
+
+    read(messageBoard)
+
 
 
   }
@@ -326,12 +351,10 @@ role ADMIN extends MODERATOR{
   Post {
     delete
 
-    //  Only administrators can clear locks of posts.
-    update(locked)
-
     // Additionally, administrators can review all posts.
     read(flagged) , update(flagged) 
-
+    read(postedAt) , read(author) , read(content)
+    read(locked) , update(locked)
 
   }
 
