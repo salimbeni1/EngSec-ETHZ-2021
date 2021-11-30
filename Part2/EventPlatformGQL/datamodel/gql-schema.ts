@@ -157,7 +157,7 @@ const typeDefs = gql`
         unsubscribe(categories: [ID!]!): User!
 
         # Events
-        createEvent: Event
+        createEvent(event: CreateEvent!): Event
         editEvent(event: EditEvent!): Event
         addCategories(categories: [ID!]!, event: ID!): Event
         removeCategories(categories: [ID!]!, event: ID!): Event

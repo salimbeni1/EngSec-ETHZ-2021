@@ -200,8 +200,29 @@ export interface ICreateEvent {
 }
 
 // TODO: Improve this resolver!
-export async function createEvent() {
-    return Event.create({});
+export async function createEvent(
+    parent: undefined,
+    { event }: { event : ICreateEvent},
+    ctx : IContext ) {
+
+    const o = getLoggedIn(ctx)
+
+    return Event.create({
+
+        title: event.title,
+        time: event.time,
+        description: event.description,
+        location: event.location,
+        owner: o,
+        private: event.private,
+        managers:   [o ],
+        categories: event.categories? event.categories : [],
+        attendants: [o ],
+        invited: [],
+        requests: [],
+        messageBoard: [],
+
+    });
 }
 
 export interface IEditEvent {
