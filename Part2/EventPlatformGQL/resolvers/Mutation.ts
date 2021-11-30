@@ -34,9 +34,18 @@ export interface IEditCategory {
     name: string,
 }
 
+
 // TODO: Improve this resolver
-export function createCategory() {
-    return Category.create({});
+export function createCategory(
+    parent: undefined ,
+    { name }  : { name : String }
+    ) {
+    return Category.create({
+        name: name,
+        moderators: [],
+        subscribers: [],
+        events: []
+    });
 }
 
 export function editCategory(

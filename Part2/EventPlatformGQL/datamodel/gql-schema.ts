@@ -138,9 +138,10 @@ const typeDefs = gql`
         events(ids: [ID!]): [Event]
     }
 
+
     type Mutation {
         # Categories
-        createCategory: Category
+        createCategory(name: String!): Category
         editCategory(category: EditCategory): Category
         deleteCategory(category: ID!): Category
         assignModerator(category: ID!, user: ID!): Category
