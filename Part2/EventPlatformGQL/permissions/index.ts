@@ -132,7 +132,20 @@ export const permissions = shield(
             unsubscribe: allow,
 
             // Events
-            createEvent: rules.isLoggedIn,
+            createEvent: or(
+                // anyone login can build a public event
+                and ( 
+                    rules.isLoggedIn,
+                    not(rules.argIsPrivate)
+                ), 
+                // not free user can do whatever they want
+                or(
+                    callerHasRole(Role.PREMIUM),
+                    callerHasRole(Role.MODERATOR),
+                    callerHasRole(Role.ADMINISTRATOR),
+                )
+                
+            ),
             editEvent: and(
                 or(
                     rules.callerManagesArg,

@@ -311,6 +311,8 @@ export const argIsFlagged = rule({ cache: 'no_cache' })(
     }
 );
 
+
+
 export const argIsLocked = rule({ cache: 'no_cache' })(
     (parent: any, args: IPostArg) => Post.findById(
         Types.ObjectId(args.post),
