@@ -420,8 +420,19 @@ export interface ICreatePost {
     content: string
 }
 // TODO: Improve this resolver
-export function createPost() {
-    return Post.create();
+export function createPost(
+    parent: undefined,
+    { post }: { post : ICreatePost},
+    ctx : IContext 
+) {
+    return Post.create({
+        content: post.content,
+        flagged: false,
+        locked: false,
+        author: getLoggedIn(ctx) ,
+        postedAt: post.postedAt,
+    }
+    );
 }
 
 // TODO: Make this interface obsolete

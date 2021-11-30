@@ -179,7 +179,7 @@ const typeDefs = gql`
         removeRequest(user: ID!, event: ID!): Event
 
         # Posts
-        createPost: Post
+        createPost(post: CreatePost): Post
         editPost(post: EditPost!): Post
         deletePost(post: ID!): Post
         flagPost(post: ID!): Post
