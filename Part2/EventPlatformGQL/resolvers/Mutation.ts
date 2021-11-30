@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import { IContext } from '..';
 import { UserInputError } from 'apollo-server-express';
 import { getLoggedIn, mapIds, popId } from './util';
+import { subscribes } from './User';
 
 export interface INode {
     _id: string,
@@ -83,8 +84,17 @@ export interface ICreateUser {
 
 const SALT_ROUNDS = 8;
 // TODO: Improve this resolver
-export function createUser() {
-    return User.create({});
+export function createUser( 
+    parent: undefined,
+    { user }: { user : ICreateUser} ) {
+    return User.create({
+        role: Role.FREE ,
+        username: user.username ,
+        name: user.name ,
+        surname: user.surname ,
+        subscribes: [] ,
+        password: user.password,
+    });
 }
 
 export function login(

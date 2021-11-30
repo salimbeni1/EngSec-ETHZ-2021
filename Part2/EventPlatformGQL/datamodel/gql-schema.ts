@@ -147,7 +147,7 @@ const typeDefs = gql`
         removeModerator(category: ID!, user: ID!): Category
 
         # Users
-        createUser: User
+        createUser(user:CreateUser!): User
         login(username: String!, password: String!): Boolean!
         editUser(user: EditUser!): User
         setRole(user: ID!, role: Role!): User
