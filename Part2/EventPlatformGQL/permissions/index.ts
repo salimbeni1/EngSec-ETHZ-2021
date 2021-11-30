@@ -193,7 +193,10 @@ export const permissions = shield(
             removeRequest: or(rules.callerRequestsArg, rules.callerManagesArg),
 
             // Posts
-            createPost: rules.isLoggedIn,
+            createPost: and(
+                rules.isLoggedIn,
+                rules.callerAttendsArg,
+            ),
             // TODO: In its current implementation, checking this permission is
             // very hard to implement - do it better!
             editPost: allow,
