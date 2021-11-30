@@ -84,16 +84,17 @@ export interface ICreateUser {
 
 const SALT_ROUNDS = 8;
 // TODO: Improve this resolver
-export function createUser( 
+export async function createUser( 
     parent: undefined,
     { user }: { user : ICreateUser} ) {
+    const pwd = await hash(user.password , SALT_ROUNDS)
     return User.create({
         role: Role.FREE ,
         username: user.username ,
         name: user.name ,
         surname: user.surname ,
         subscribes: [] ,
-        password: user.password,
+        password: pwd
     });
 }
 
@@ -107,6 +108,7 @@ export function login(
             return false;
         }
         return compare(password, user.password).then((checkPassed) => {
+               
             if (checkPassed) {
                 const { username, _id, role } = user;
                 ctx.session.user = { username, _id: _id.toHexString(), role };
