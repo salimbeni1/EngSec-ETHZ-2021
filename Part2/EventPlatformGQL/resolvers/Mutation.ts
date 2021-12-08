@@ -380,6 +380,26 @@ export function editInvitation(
     return Invitation.findByIdAndUpdate(_id, { ...mapped });
 }
 
+// invite(user: ID!, event: ID!): Invitation
+export function invite(
+    parent: undefined,
+    { user, event }: IUserArg & IEventArg,
+    ctx : IContext 
+) {
+    //_id: ID!
+    // from: User!
+    // invited: User!
+    // to: Event!
+    const o = getLoggedIn(ctx) // caller
+    const userId = Types.ObjectId(user); // invited user
+    const eventId = Types.ObjectId(event);
+    return Invitation.create({
+        from: getLoggedIn(ctx),
+        invited: user,
+        to: event,
+    });
+}
+
 // TODO: Improve this resolver
 export function deleteInvitation(
     parent: undefined,

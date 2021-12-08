@@ -172,6 +172,8 @@ const typeDefs = gql`
         # Invitations
         createInvitation: Invitation
         editInvitation(invitation: EditInvitation!): Invitation
+        # NEW
+        invite(user: ID!, event: ID!): Invitation
         deleteInvitation(invitation: ID!): Invitation
 
         # Requests

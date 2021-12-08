@@ -179,10 +179,15 @@ export const permissions = shield(
             demote: and(rules.callerOwnsArg, not(isCaller(Reference.ARG))),
 
             // Invitations
-            createInvitation: rules.isLoggedIn,
+            //createInvitation: rules.isLoggedIn,
             // TODO: In its current implementation, checking this permission is
             // very hard to implement - do it better!
-            editInvitation: allow,
+            //editInvitation: allow,
+            // NEW
+            invite: or(
+                rules.callerManagesArg,
+                rules.callerOwnsArg,
+            ),
             deleteInvitation: or(
                 rules.callerIsInvitedToArg,
                 rules.callerManagesArg,
