@@ -179,7 +179,9 @@ const typeDefs = gql`
 
         # Requests
         request(event: ID!): Event
-        removeRequest(user: ID!, event: ID!): Event
+        # removeRequest(user: ID!, event: ID!): Event
+        #NEW
+        declineRequest(user: ID!, event: ID!): Event
         acceptRequest(user: ID!, event: ID!): Event
 
         # Posts
@@ -188,6 +190,8 @@ const typeDefs = gql`
         deletePost(post: ID!): Post
         flagPost(post: ID!): Post
         clearPost(post: ID!): Post
+        # new
+        #review(post: ID!, locked: Boolean!): Post
     }
 `;
 export default typeDefs;

@@ -461,7 +461,7 @@ export function request(
 }
 
 // TODO: Improve this resolver
-export function removeRequest(
+export function declineRequest(
     parent: undefined,
     { user, event }: IUserArg & IEventArg,
 ) {

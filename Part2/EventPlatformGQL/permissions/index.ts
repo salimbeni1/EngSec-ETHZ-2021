@@ -195,7 +195,7 @@ export const permissions = shield(
 
             // Requests
             request: not(rules.argIsPrivate),
-            removeRequest: or(rules.callerRequestsArg, rules.callerManagesArg),
+            declineRequest: or(rules.callerRequestsArg, rules.callerManagesArg),
             acceptRequest: and(rules.isLoggedIn, not(rules.argIsPrivate), rules.callerManagesArg),
             // Posts
             createPost: and(
