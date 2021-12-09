@@ -170,15 +170,17 @@ const typeDefs = gql`
         addAttendant(user: ID!, event: ID!): Event
 
         # Invitations
-        createInvitation: Invitation
-        editInvitation(invitation: EditInvitation!): Invitation
+        #createInvitation: Invitation
+        #editInvitation(invitation: EditInvitation!): Invitation
         # NEW
         invite(user: ID!, event: ID!): Invitation
+        acceptInvitation(invitation: ID!): Event
         deleteInvitation(invitation: ID!): Invitation
 
         # Requests
         request(event: ID!): Event
         removeRequest(user: ID!, event: ID!): Event
+        acceptRequest(user: ID!, event: ID!): Event
 
         # Posts
         createPost(post: CreatePost): Post

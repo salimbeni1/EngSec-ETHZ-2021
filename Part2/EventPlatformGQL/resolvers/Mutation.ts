@@ -338,6 +338,28 @@ export function demote(
     );
 }
 
+export function acceptRequest(
+    parent: undefined,
+    {user, event}: IUserArg & IEventArg)
+    {
+        const userId = Types.ObjectId(user);
+        const eventId = Types.ObjectId(event);
+        
+    
+
+        return Event.findOneAndUpdate(
+            {
+                _id: eventId,
+                requests: userId,
+            },
+            {
+                $push: { attendants: userId },
+                $pull: { requests: userId }
+            },
+                { 'new': true },
+        )
+    }
+
 // TODO: Make this resolver obsolete
 export function addAttendant(parent: undefined, args: IEventArg & IUserArg) {
     return Event.findByIdAndUpdate(
@@ -347,9 +369,9 @@ export function addAttendant(parent: undefined, args: IEventArg & IUserArg) {
 }
 
 // TODO: Improve this resolver
-export function createInvitation() {
-    return Invitation.create({});
-}
+// export function createInvitation() {
+    //return Invitation.create({});
+//}
 
 // TODO: Make this interface obsolete
 export interface IEditInvitation {
@@ -358,7 +380,7 @@ export interface IEditInvitation {
     to?: string
 }
 // TODO: Make this resolver obsolete
-export function editInvitation(
+/*export function editInvitation(
     parent: undefined,
     { invitation }: { invitation: IEditInvitation & INode},
 ) {
@@ -379,6 +401,7 @@ export function editInvitation(
     }
     return Invitation.findByIdAndUpdate(_id, { ...mapped });
 }
+*/
 
 // invite(user: ID!, event: ID!): Invitation
 export function invite(
@@ -399,6 +422,24 @@ export function invite(
         to: event,
     });
 }
+
+//export function acceptInvitation(
+//    parent: undefined,
+//    { invitation }: IInvitationArg,
+//    ctx : IContext,
+//) {
+//    const invitation_id = Types.ObjectId(invitation);
+//    const invitation_obj = Invitation.findById(invitation_id);
+//    //const e = invitation_id.to();
+//
+//    //return Event.findByIdAndUpdate(
+//    //    Types.ObjectId(args.event),
+//    //    { $addToSet: { attendants: Types.ObjectId(args.user) } },
+//    //);
+//    
+//    // delete invitation
+//    Invitation.findOneAndDelete({ _id: Types.ObjectId(invitation) });
+//}
 
 // TODO: Improve this resolver
 export function deleteInvitation(
