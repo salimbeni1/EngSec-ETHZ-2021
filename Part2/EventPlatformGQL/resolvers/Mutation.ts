@@ -5,6 +5,7 @@ import { IContext } from '..';
 import { UserInputError } from 'apollo-server-express';
 import { getLoggedIn, mapIds, popId } from './util';
 import { subscribes } from './User';
+import { print, printError } from 'graphql';
 
 export interface INode {
     _id: string,
@@ -32,6 +33,11 @@ export interface ICategoryArg {
 
 export interface IEditCategory {
     name: string,
+}
+
+export interface IReviewArg {
+    post: string,
+    locked: Boolean
 }
 
 
@@ -464,7 +470,9 @@ export function request(
 export function declineRequest(
     parent: undefined,
     { user, event }: IUserArg & IEventArg,
+    ctx: IContext
 ) {
+    
     const userId = Types.ObjectId(user);
     return Event.findOneAndUpdate(
         {
@@ -505,26 +513,39 @@ export interface IEditPost {
     postedAt: string
 }
 // TODO: Make this resolver obsolete
-export function editPost(parent: undefined, { post }: { post: IEditPost & INode }) {
-    const _id = popId(post);
-    const mapped: {
-        author?: Types.ObjectId,
-        reviewer?: Types.ObjectId,
-        postedAt?: Types.ObjectId,
-    } = {};
-    if (post.author) {
-        mapped.author = Types.ObjectId(post.author);
-    }
-    if (post.reviewer) {
-        mapped.reviewer = Types.ObjectId(post.reviewer);
-    }
-    if (post.postedAt) {
-        mapped.postedAt = Types.ObjectId(post.postedAt);
-    }
+// export function editPost(parent: undefined, { post }: { post: IEditPost & INode }) {
+//     const _id = popId(post);
+//     const mapped: {
+//         author?: Types.ObjectId,
+//         reviewer?: Types.ObjectId,
+//         postedAt?: Types.ObjectId,
+//     } = {};
+//     if (post.author) {
+//         mapped.author = Types.ObjectId(post.author);
+//     }
+//     if (post.reviewer) {
+//         mapped.reviewer = Types.ObjectId(post.reviewer);
+//     }
+//     if (post.postedAt) {
+//         mapped.postedAt = Types.ObjectId(post.postedAt);
+//     }
+//     return Post.findByIdAndUpdate(
+//         _id,
+//         // Later spreads take priority over earlier spreads
+//         { ...post, ...mapped },
+//     );
+// }
+
+export function review(parent: undefined, { post, locked }: IReviewArg) {
+    const postId = Types.ObjectId(post);
     return Post.findByIdAndUpdate(
-        _id,
-        // Later spreads take priority over earlier spreads
-        { ...post, ...mapped },
+        {
+            _id: postId,
+        },
+        {
+            $set: { locked: locked, flagged: false },
+        },
+        { 'new': true },
     );
 }
 
@@ -540,9 +561,9 @@ export function flagPost(parent: undefined, { post }: IPostArg) {
 }
 
 // TODO: Make this resolver obsolete
-export function clearPost(parent: undefined, { post }: IPostArg) {
-    return Post.findByIdAndUpdate(
-        Types.ObjectId(post),
-        { flagged: false },
-    );
-}
+// export function clearPost(parent: undefined, { post }: IPostArg) {
+//     return Post.findByIdAndUpdate(
+//         Types.ObjectId(post),
+//         { flagged: false },
+//     );
+// }

@@ -204,7 +204,7 @@ export const permissions = shield(
             ),
             // TODO: In its current implementation, checking this permission is
             // very hard to implement - do it better!
-            editPost: allow,
+            // editPost: allow,
             deletePost: and(
                 callerHasRole(Role.ADMINISTRATOR),
                 rules.argIsLocked,
@@ -214,7 +214,16 @@ export const permissions = shield(
                 rules.callerModeratesArg,
                 callerHasRole(Role.ADMINISTRATOR),
             ),
-            clearPost: or(rules.callerModeratesArg, callerHasRole(Role.ADMINISTRATOR)),
+            // clearPost: or(rules.callerModeratesArg, callerHasRole(Role.ADMINISTRATOR)),
+            // NEW
+            review: and(
+                or(
+                    rules.callerModeratesArg, 
+                    callerHasRole(Role.ADMINISTRATOR),
+                    rules.callerManagesArg,
+                ),
+                rules.argIsFlagged
+            )
         },
     },
     {

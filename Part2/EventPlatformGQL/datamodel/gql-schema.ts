@@ -186,12 +186,12 @@ const typeDefs = gql`
 
         # Posts
         createPost(post: CreatePost): Post
-        editPost(post: EditPost!): Post
+        # editPost(post: EditPost!): Post
         deletePost(post: ID!): Post
         flagPost(post: ID!): Post
-        clearPost(post: ID!): Post
+        # clearPost(post: ID!): Post
         # new
-        #review(post: ID!, locked: Boolean!): Post
+        review(post: ID!, locked: Boolean!): Post
     }
 `;
 export default typeDefs;
