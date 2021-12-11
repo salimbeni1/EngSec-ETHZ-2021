@@ -192,7 +192,7 @@ export const permissions = shield(
             //    rules.callerIsInvitedToArg,
             //    rules.callerManagesArg,
             //),
-            //acceptInvitation: rules.callerIsInvitedToArg,
+            acceptInvitation: rules.callerIsInvitedToArg,
 
             // Requests
             request: not(rules.argIsPrivate),

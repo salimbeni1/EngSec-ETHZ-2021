@@ -429,22 +429,50 @@ export function invite(
     });
 }
 
-// export function acceptInvitation(
-//     parent: undefined,
-//     { invitation }: IInvitationArg,
-//     ctx : IContext,
-// ) {
-//     const invitation_id = Types.ObjectId(invitation);
-// 
-//     // delete invitation
-//     const inv = Invitation.findOneAndDelete({ _id: invitation_id });
-// 
-//     //addAttendant
-//     return Event.findByIdAndUpdate(
-//         Types.ObjectId(inv.),
-//         { $addToSet: { attendants: invitation.invited } },
-//     );
-// }
+//export function addAttendant(parent: undefined, args: IEventArg & IUserArg) {
+//    return Event.findByIdAndUpdate(
+//        Types.ObjectId(args.event),
+//        { $addToSet: { attendants: Types.ObjectId(args.user) } },
+//    );
+//}
+
+export async function acceptInvitation(
+    parent: undefined,
+    { invitation }: IInvitationArg,
+    ctx : IContext,
+) {
+    //console.log(Types.ObjectId(invitation));
+    //console.log(type(invitation));
+    //invitation = invitation.cast(Invitation);
+    const invitation_id = Types.ObjectId(invitation);
+    //const inv = Invitation.findById(invitation_id);
+    //console.log(inv);
+
+    
+    const query = Invitation.findOne({
+        _id: invitation_id
+      });
+      query.getFilter();
+      const inv = await query.exec();
+      //console.log(inv);
+      //if (inv != null) {
+      //  console.log(inv.to);
+      //}
+
+    //addAttendant
+    if (inv == null) {
+        return null;
+    }
+    const event = Event.findByIdAndUpdate(
+        inv.to,
+        { $addToSet: { attendants: inv.invited } },
+    );
+    //delete invitation
+    Invitation.findOneAndDelete({ _id: invitation_id }).exec();
+
+
+    return event;// Event.findById(Types.ObjectId(inv.to));
+}
 
 // TODO: Improve this resolver
 // export function deleteInvitation(
