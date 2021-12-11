@@ -188,10 +188,11 @@ export const permissions = shield(
                 rules.callerManagesArg,
                 rules.callerOwnsArg,
             ),
-            deleteInvitation: or(
-                rules.callerIsInvitedToArg,
-                rules.callerManagesArg,
-            ),
+            //deleteInvitation: or(
+            //    rules.callerIsInvitedToArg,
+            //    rules.callerManagesArg,
+            //),
+            //acceptInvitation: rules.callerIsInvitedToArg,
 
             // Requests
             request: not(rules.argIsPrivate),
@@ -223,7 +224,8 @@ export const permissions = shield(
                     rules.callerManagesArg,
                 ),
                 rules.argIsFlagged
-            )
+            ),
+            unlockPost: callerHasRole(Role.ADMINISTRATOR),
         },
     },
     {

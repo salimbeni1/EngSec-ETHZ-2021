@@ -174,8 +174,8 @@ const typeDefs = gql`
         #editInvitation(invitation: EditInvitation!): Invitation
         # NEW
         invite(user: ID!, event: ID!): Invitation
-        acceptInvitation(invitation: ID!): Event
-        deleteInvitation(invitation: ID!): Invitation
+        #acceptInvitation(invitation: ID!): Event
+        #deleteInvitation(invitation: ID!): Invitation
 
         # Requests
         request(event: ID!): Event
@@ -192,6 +192,7 @@ const typeDefs = gql`
         # clearPost(post: ID!): Post
         # new
         review(post: ID!, locked: Boolean!): Post
+        unlockPost(post: ID!): Post
     }
 `;
 export default typeDefs;

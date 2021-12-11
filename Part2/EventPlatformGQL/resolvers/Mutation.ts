@@ -429,31 +429,30 @@ export function invite(
     });
 }
 
-//export function acceptInvitation(
-//    parent: undefined,
-//    { invitation }: IInvitationArg,
-//    ctx : IContext,
-//) {
-//    const invitation_id = Types.ObjectId(invitation);
-//    const invitation_obj = Invitation.findById(invitation_id);
-//    //const e = invitation_id.to();
-//
-//    //return Event.findByIdAndUpdate(
-//    //    Types.ObjectId(args.event),
-//    //    { $addToSet: { attendants: Types.ObjectId(args.user) } },
-//    //);
-//    
-//    // delete invitation
-//    Invitation.findOneAndDelete({ _id: Types.ObjectId(invitation) });
-//}
+// export function acceptInvitation(
+//     parent: undefined,
+//     { invitation }: IInvitationArg,
+//     ctx : IContext,
+// ) {
+//     const invitation_id = Types.ObjectId(invitation);
+// 
+//     // delete invitation
+//     const inv = Invitation.findOneAndDelete({ _id: invitation_id });
+// 
+//     //addAttendant
+//     return Event.findByIdAndUpdate(
+//         Types.ObjectId(inv.),
+//         { $addToSet: { attendants: invitation.invited } },
+//     );
+// }
 
 // TODO: Improve this resolver
-export function deleteInvitation(
-    parent: undefined,
-    { invitation }: IInvitationArg,
-) {
-    return Invitation.findOneAndDelete({ _id: Types.ObjectId(invitation) });
-}
+// export function deleteInvitation(
+//     parent: undefined,
+//     { invitation }: IInvitationArg,
+// ) {
+//     return Invitation.findOneAndDelete({ _id: Types.ObjectId(invitation) });
+// }
 
 export function request(
     parent: undefined,
@@ -470,9 +469,7 @@ export function request(
 export function declineRequest(
     parent: undefined,
     { user, event }: IUserArg & IEventArg,
-    ctx: IContext
 ) {
-    
     const userId = Types.ObjectId(user);
     return Event.findOneAndUpdate(
         {
@@ -536,7 +533,20 @@ export interface IEditPost {
 //     );
 // }
 
-export function review(parent: undefined, { post, locked }: IReviewArg) {
+export function unlockPost(parent: undefined, { post }: IPostArg) {
+    const postId = Types.ObjectId(post);
+    return Post.findByIdAndUpdate(
+        {
+            _id: postId,
+        },
+        {
+            $set: { locked: false, flagged: false },
+        },
+        { 'new': true },
+    );
+}
+
+export function review(parent: undefined, { post, locked }: string & boolean) {
     const postId = Types.ObjectId(post);
     return Post.findByIdAndUpdate(
         {
