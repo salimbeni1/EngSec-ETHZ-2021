@@ -441,23 +441,12 @@ export async function acceptInvitation(
     { invitation }: IInvitationArg,
     ctx : IContext,
 ) {
-    //console.log(Types.ObjectId(invitation));
-    //console.log(type(invitation));
-    //invitation = invitation.cast(Invitation);
     const invitation_id = Types.ObjectId(invitation);
-    //const inv = Invitation.findById(invitation_id);
-    //console.log(inv);
-
-    
     const query = Invitation.findOne({
         _id: invitation_id
       });
       query.getFilter();
       const inv = await query.exec();
-      //console.log(inv);
-      //if (inv != null) {
-      //  console.log(inv.to);
-      //}
 
     //addAttendant
     if (inv == null) {
@@ -471,7 +460,7 @@ export async function acceptInvitation(
     Invitation.findOneAndDelete({ _id: invitation_id }).exec();
 
 
-    return event;// Event.findById(Types.ObjectId(inv.to));
+    return event;
 }
 
 // TODO: Improve this resolver
@@ -481,6 +470,13 @@ export async function acceptInvitation(
 // ) {
 //     return Invitation.findOneAndDelete({ _id: Types.ObjectId(invitation) });
 // }
+
+export function declineInvitation(
+    parent: undefined,
+    { invitation }: IInvitationArg,
+) {
+    return Invitation.findOneAndDelete({ _id: Types.ObjectId(invitation) });
+}
 
 export function request(
     parent: undefined,

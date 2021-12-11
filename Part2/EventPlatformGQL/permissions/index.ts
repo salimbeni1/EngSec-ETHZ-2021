@@ -188,10 +188,11 @@ export const permissions = shield(
                 rules.callerManagesArg,
                 rules.callerOwnsArg,
             ),
-            //deleteInvitation: or(
-            //    rules.callerIsInvitedToArg,
-            //    rules.callerManagesArg,
-            //),
+            declineInvitation: or(
+                rules.callerIsInvitedToArg,
+                rules.callerManagesArg,
+                rules.callerOwnsArg,
+            ),
             acceptInvitation: rules.callerIsInvitedToArg,
 
             // Requests
