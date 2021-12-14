@@ -3,7 +3,7 @@ import { LogicRule, Rule } from 'graphql-shield/dist/rules';
 import { ShieldRule } from 'graphql-shield/dist/types';
 import { isArray, mapValues, reduce, values } from 'lodash';
 import { Role } from '../datamodel/db-schema';
-import { callerHasRole } from '../permissions/rules';
+import { callerHasRole, isLoggedIn } from '../permissions/rules';
 import { project } from '../permissions/util';
 import { mapLeafs, mergeArrayMap, RecMap } from './util';
 
@@ -24,7 +24,7 @@ function isRule(x: any): x is ShieldRule {
  * @returns Merged rules
  */
 function mergePerms(
-    perms: IRules[],
+    perms: IRules[] ,
     mergeLeaf: (leafPerms: ShieldRule[]) => ShieldRule,
 ): IRules {
     const arrayPerms = perms.map((perm) => mapLeafs(perm, (leaf) => [leaf], isRule));
@@ -40,7 +40,12 @@ function mergePerms(
  */
 export function OR(...perms: IRules[]): IRules {
     // TODO: Implement!
-    return {};
+    /*
+    return perms.reduce( (p , c) => {
+        return p ; 
+    } );
+    */
+    return mergePerms(perms , (leaf_rules) => or( ...leaf_rules));
 }
 
 /**
@@ -60,7 +65,20 @@ type RBAC = { [k in Role]?: IRules };
  * @returns Map of rules that check user roles and map it to the correct
  * permissions
  */
-export function rbac(perms: RBAC, defaults?: IRules): IRules {
+export function rbac(perms: RBAC, defaults: IRules): IRules {
     // TODO: Implement!
-    return {};
+    // Array.from( perms ).map(([key, value]) => ({ key, value }));
+    const TEST = Object.entries(perms).map(
+        el => {
+            const _role = Role[el[0] as keyof typeof Role] 
+            const _rule = el[1]
+            return mergePerms( [_rule] , 
+                (leaf_rules) => and( callerHasRole(_role)  ,  or( ...leaf_rules))
+                );
+        }
+        );   
+    const FINAL = OR( defaults , ...TEST );
+    console.log(FINAL);
+    return FINAL;
+    
 }
