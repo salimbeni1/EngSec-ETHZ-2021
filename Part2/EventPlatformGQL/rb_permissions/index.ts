@@ -178,10 +178,11 @@ const DEFAULTS = {
         deleteEvent: rules.callerOwnsParent,
 
         // Event management
-        addAttendant: or(
-            and(rules.callerManagesArg, rules.argRequestsArg),
-            and(isCaller(Reference.ARG), rules.callerIsInvitedToArg),
-        ),
+        //addAttendant: or(
+        //    and(rules.callerManagesArg, rules.argRequestsArg),
+        //    and(isCaller(Reference.ARG), rules.callerIsInvitedToArg),
+        //),
+        acceptRequest: and(rules.isLoggedIn, not(rules.argIsPrivate), rules.callerManagesArg),
         kick: and(
             not(and(rules.callerOwnsArg, isCaller(Reference.ARG))),
             or(isCaller(Reference.ARG), rules.callerManagesArg),
@@ -190,19 +191,28 @@ const DEFAULTS = {
         demote: and(rules.callerOwnsArg, not(isCaller(Reference.ARG))),
 
         // Invitations
-        createInvitation: rules.isLoggedIn,
+        //createInvitation: rules.isLoggedIn,
         // TODO: In its current implementation, checking this permission is
         // very hard to implement - do it better!
-        editInvitation: allow,
-        deleteInvitation: or(
+        //editInvitation: allow,
+        //deleteInvitation: or(
+        //    rules.callerIsInvitedToArg,
+        //    rules.callerManagesArg,
+        //),
+        declineInvitation: or(
             rules.callerIsInvitedToArg,
             rules.callerManagesArg,
+            rules.callerOwnsArg,
         ),
-
+        invite: or(
+            rules.callerManagesArg,
+            rules.callerOwnsArg,
+        ),
+        acceptInvitation: rules.callerIsInvitedToArg,
         // Requests
         request: not(rules.argIsPrivate),
-        removeRequest: or(rules.callerRequestsArg, rules.callerManagesArg),
-
+        //removeRequest: or(rules.callerRequestsArg, rules.callerManagesArg),
+        declineRequest: or(rules.callerRequestsArg, rules.callerManagesArg),
         // Posts
         createPost: and(
             rules.isLoggedIn,
@@ -210,7 +220,8 @@ const DEFAULTS = {
         ),
         // TODO: In its current implementation, checking this permission is
         // very hard to implement - do it better!
-        editPost: allow,
+        // editPost: allow,
+        unlockPost: allow,
         deletePost: and(
             deny,//callerHasRole(Role.ADMINISTRATOR),
             rules.argIsLocked,
@@ -220,10 +231,18 @@ const DEFAULTS = {
             rules.callerModeratesArg,
             deny,//callerHasRole(Role.ADMINISTRATOR),
         ),
-        clearPost: or(
-            rules.callerModeratesArg, 
-            deny// callerHasRole(Role.ADMINISTRATOR)
+        //clearPost: or(
+        //    rules.callerModeratesArg, 
+        //    deny// callerHasRole(Role.ADMINISTRATOR)
+        //    ),
+        review: and(
+            or(
+                //rules.callerModeratesArg, 
+                //rules.callerHasRole(Role.ADMINISTRATOR),
+                rules.callerManagesArg,
             ),
+            rules.argIsFlagged
+        ),
     }
 };
 
@@ -317,7 +336,14 @@ const MODERATOR = {
                 deny,//callerHasRole(Role.ADMINISTRATOR),
             ),
         ),
-        
+        review: and(
+            or(
+                rules.callerModeratesArg, 
+                //rules.callerHasRole(Role.ADMINISTRATOR),
+                //rules.callerManagesArg,
+            ),
+            rules.argIsFlagged
+        ),
     }
 
 
@@ -449,12 +475,13 @@ const ADMINISTRATOR = {
             allow,//callerHasRole(Role.ADMINISTRATOR),
         ),
         deleteEvent: rules.callerOwnsParent,
-
+        
+        review: rules.argIsFlagged,
         
         
         // TODO: In its current implementation, checking this permission is
         // very hard to implement - do it better!
-        editPost: allow,
+        //editPost: allow,
         deletePost: and(
             allow,//callerHasRole(Role.ADMINISTRATOR),
             rules.argIsLocked,
@@ -464,10 +491,10 @@ const ADMINISTRATOR = {
             rules.callerModeratesArg,
             allow,//callerHasRole(Role.ADMINISTRATOR),
         ),
-        clearPost: or(
-            rules.callerModeratesArg, 
-            allow// callerHasRole(Role.ADMINISTRATOR)
-            ),
+        //clearPost: or(
+        //    rules.callerModeratesArg, 
+        //    allow// callerHasRole(Role.ADMINISTRATOR)
+        //    ),
     }
 
 };
