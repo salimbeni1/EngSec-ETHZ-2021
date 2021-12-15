@@ -179,19 +179,26 @@ export const permissions = shield(
             demote: and(rules.callerOwnsArg, not(isCaller(Reference.ARG))),
 
             // Invitations
-            createInvitation: rules.isLoggedIn,
+            //createInvitation: rules.isLoggedIn,
             // TODO: In its current implementation, checking this permission is
             // very hard to implement - do it better!
-            editInvitation: allow,
-            deleteInvitation: or(
+            //editInvitation: allow,
+            // NEW
+            invite: or(
+                rules.callerManagesArg,
+                rules.callerOwnsArg,
+            ),
+            declineInvitation: or(
                 rules.callerIsInvitedToArg,
                 rules.callerManagesArg,
+                rules.callerOwnsArg,
             ),
+            acceptInvitation: rules.callerIsInvitedToArg,
 
             // Requests
             request: not(rules.argIsPrivate),
-            removeRequest: or(rules.callerRequestsArg, rules.callerManagesArg),
-
+            declineRequest: or(rules.callerRequestsArg, rules.callerManagesArg),
+            acceptRequest: and(rules.isLoggedIn, not(rules.argIsPrivate), rules.callerManagesArg),
             // Posts
             createPost: and(
                 rules.isLoggedIn,
@@ -199,7 +206,7 @@ export const permissions = shield(
             ),
             // TODO: In its current implementation, checking this permission is
             // very hard to implement - do it better!
-            editPost: allow,
+            // editPost: allow,
             deletePost: and(
                 callerHasRole(Role.ADMINISTRATOR),
                 rules.argIsLocked,
@@ -209,7 +216,17 @@ export const permissions = shield(
                 rules.callerModeratesArg,
                 callerHasRole(Role.ADMINISTRATOR),
             ),
-            clearPost: or(rules.callerModeratesArg, callerHasRole(Role.ADMINISTRATOR)),
+            // clearPost: or(rules.callerModeratesArg, callerHasRole(Role.ADMINISTRATOR)),
+            // NEW
+            review: and(
+                or(
+                    rules.callerModeratesArg, 
+                    callerHasRole(Role.ADMINISTRATOR),
+                    rules.callerManagesArg,
+                ),
+                rules.argIsFlagged
+            ),
+            unlockPost: callerHasRole(Role.ADMINISTRATOR),
         },
     },
     {

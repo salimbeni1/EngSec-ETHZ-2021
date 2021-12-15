@@ -170,20 +170,29 @@ const typeDefs = gql`
         addAttendant(user: ID!, event: ID!): Event
 
         # Invitations
-        createInvitation: Invitation
-        editInvitation(invitation: EditInvitation!): Invitation
-        deleteInvitation(invitation: ID!): Invitation
+        #createInvitation: Invitation
+        #editInvitation(invitation: EditInvitation!): Invitation
+        # NEW
+        invite(user: ID!, event: ID!): Invitation
+        acceptInvitation(invitation: ID!): Event
+        declineInvitation(invitation: ID!): Invitation
 
         # Requests
         request(event: ID!): Event
-        removeRequest(user: ID!, event: ID!): Event
+        # removeRequest(user: ID!, event: ID!): Event
+        #NEW
+        declineRequest(user: ID!, event: ID!): Event
+        acceptRequest(user: ID!, event: ID!): Event
 
         # Posts
         createPost(post: CreatePost): Post
-        editPost(post: EditPost!): Post
+        # editPost(post: EditPost!): Post
         deletePost(post: ID!): Post
         flagPost(post: ID!): Post
-        clearPost(post: ID!): Post
+        # clearPost(post: ID!): Post
+        # new
+        review(post: ID!, locked: Boolean!): Post
+        unlockPost(post: ID!): Post
     }
 `;
 export default typeDefs;
