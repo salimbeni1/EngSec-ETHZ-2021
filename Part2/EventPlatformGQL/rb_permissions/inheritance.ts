@@ -78,7 +78,7 @@ export function rbac(perms: RBAC, defaults: IRules): IRules {
         }
         );   
     const FINAL = OR( defaults , ...TEST );
-    console.log(FINAL);
+    // console.log(FINAL);
     return FINAL;
     
 }

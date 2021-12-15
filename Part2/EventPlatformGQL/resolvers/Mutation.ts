@@ -5,6 +5,7 @@ import { IContext } from '..';
 import { UserInputError } from 'apollo-server-express';
 import { getLoggedIn, mapIds, popId } from './util';
 import { subscribes } from './User';
+import { print, printError } from 'graphql';
 
 export interface INode {
     _id: string,
@@ -32,6 +33,11 @@ export interface ICategoryArg {
 
 export interface IEditCategory {
     name: string,
+}
+
+export interface IReviewArg {
+    post: string,
+    locked: Boolean
 }
 
 
@@ -338,6 +344,28 @@ export function demote(
     );
 }
 
+export function acceptRequest(
+    parent: undefined,
+    {user, event}: IUserArg & IEventArg)
+    {
+        const userId = Types.ObjectId(user);
+        const eventId = Types.ObjectId(event);
+        
+    
+
+        return Event.findOneAndUpdate(
+            {
+                _id: eventId,
+                requests: userId,
+            },
+            {
+                $push: { attendants: userId },
+                $pull: { requests: userId }
+            },
+                { 'new': true },
+        )
+    }
+
 // TODO: Make this resolver obsolete
 export function addAttendant(parent: undefined, args: IEventArg & IUserArg) {
     return Event.findByIdAndUpdate(
@@ -347,9 +375,9 @@ export function addAttendant(parent: undefined, args: IEventArg & IUserArg) {
 }
 
 // TODO: Improve this resolver
-export function createInvitation() {
-    return Invitation.create({});
-}
+// export function createInvitation() {
+    //return Invitation.create({});
+//}
 
 // TODO: Make this interface obsolete
 export interface IEditInvitation {
@@ -358,7 +386,7 @@ export interface IEditInvitation {
     to?: string
 }
 // TODO: Make this resolver obsolete
-export function editInvitation(
+/*export function editInvitation(
     parent: undefined,
     { invitation }: { invitation: IEditInvitation & INode},
 ) {
@@ -379,9 +407,71 @@ export function editInvitation(
     }
     return Invitation.findByIdAndUpdate(_id, { ...mapped });
 }
+*/
+
+// invite(user: ID!, event: ID!): Invitation
+export function invite(
+    parent: undefined,
+    { user, event }: IUserArg & IEventArg,
+    ctx : IContext 
+) {
+    //_id: ID!
+    // from: User!
+    // invited: User!
+    // to: Event!
+    const o = getLoggedIn(ctx) // caller
+    const userId = Types.ObjectId(user); // invited user
+    const eventId = Types.ObjectId(event);
+    return Invitation.create({
+        from: getLoggedIn(ctx),
+        invited: user,
+        to: event,
+    });
+}
+
+//export function addAttendant(parent: undefined, args: IEventArg & IUserArg) {
+//    return Event.findByIdAndUpdate(
+//        Types.ObjectId(args.event),
+//        { $addToSet: { attendants: Types.ObjectId(args.user) } },
+//    );
+//}
+
+export async function acceptInvitation(
+    parent: undefined,
+    { invitation }: IInvitationArg,
+    ctx : IContext,
+) {
+    const invitation_id = Types.ObjectId(invitation);
+    const query = Invitation.findOne({
+        _id: invitation_id
+      });
+      query.getFilter();
+      const inv = await query.exec();
+
+    //addAttendant
+    if (inv == null) {
+        return null;
+    }
+    const event = Event.findByIdAndUpdate(
+        inv.to,
+        { $addToSet: { attendants: inv.invited } },
+    );
+    //delete invitation
+    Invitation.findOneAndDelete({ _id: invitation_id }).exec();
+
+
+    return event;
+}
 
 // TODO: Improve this resolver
-export function deleteInvitation(
+// export function deleteInvitation(
+//     parent: undefined,
+//     { invitation }: IInvitationArg,
+// ) {
+//     return Invitation.findOneAndDelete({ _id: Types.ObjectId(invitation) });
+// }
+
+export function declineInvitation(
     parent: undefined,
     { invitation }: IInvitationArg,
 ) {
@@ -400,7 +490,7 @@ export function request(
 }
 
 // TODO: Improve this resolver
-export function removeRequest(
+export function declineRequest(
     parent: undefined,
     { user, event }: IUserArg & IEventArg,
 ) {
@@ -444,26 +534,52 @@ export interface IEditPost {
     postedAt: string
 }
 // TODO: Make this resolver obsolete
-export function editPost(parent: undefined, { post }: { post: IEditPost & INode }) {
-    const _id = popId(post);
-    const mapped: {
-        author?: Types.ObjectId,
-        reviewer?: Types.ObjectId,
-        postedAt?: Types.ObjectId,
-    } = {};
-    if (post.author) {
-        mapped.author = Types.ObjectId(post.author);
-    }
-    if (post.reviewer) {
-        mapped.reviewer = Types.ObjectId(post.reviewer);
-    }
-    if (post.postedAt) {
-        mapped.postedAt = Types.ObjectId(post.postedAt);
-    }
+// export function editPost(parent: undefined, { post }: { post: IEditPost & INode }) {
+//     const _id = popId(post);
+//     const mapped: {
+//         author?: Types.ObjectId,
+//         reviewer?: Types.ObjectId,
+//         postedAt?: Types.ObjectId,
+//     } = {};
+//     if (post.author) {
+//         mapped.author = Types.ObjectId(post.author);
+//     }
+//     if (post.reviewer) {
+//         mapped.reviewer = Types.ObjectId(post.reviewer);
+//     }
+//     if (post.postedAt) {
+//         mapped.postedAt = Types.ObjectId(post.postedAt);
+//     }
+//     return Post.findByIdAndUpdate(
+//         _id,
+//         // Later spreads take priority over earlier spreads
+//         { ...post, ...mapped },
+//     );
+// }
+
+export function unlockPost(parent: undefined, { post }: IPostArg) {
+    const postId = Types.ObjectId(post);
     return Post.findByIdAndUpdate(
-        _id,
-        // Later spreads take priority over earlier spreads
-        { ...post, ...mapped },
+        {
+            _id: postId,
+        },
+        {
+            $set: { locked: false, flagged: false },
+        },
+        { 'new': true },
+    );
+}
+
+export function review(parent: undefined, { post, locked }: string & boolean) {
+    const postId = Types.ObjectId(post);
+    return Post.findByIdAndUpdate(
+        {
+            _id: postId,
+        },
+        {
+            $set: { locked: locked, flagged: false },
+        },
+        { 'new': true },
     );
 }
 
@@ -479,9 +595,9 @@ export function flagPost(parent: undefined, { post }: IPostArg) {
 }
 
 // TODO: Make this resolver obsolete
-export function clearPost(parent: undefined, { post }: IPostArg) {
-    return Post.findByIdAndUpdate(
-        Types.ObjectId(post),
-        { flagged: false },
-    );
-}
+// export function clearPost(parent: undefined, { post }: IPostArg) {
+//     return Post.findByIdAndUpdate(
+//         Types.ObjectId(post),
+//         { flagged: false },
+//     );
+// }

@@ -205,7 +205,7 @@ export const callerIsInvitedToParent = rule({ cache: 'no_cache' })(
 
 export const callerRequestsArg = rule({ cache: 'no_cache' })(
     (parent: undefined, args: IEventArg, ctx: IContext) => {
-        return Event.find({
+        return Event.findOne({
             _id: Types.ObjectId(args.event),
             requests: getLoggedIn(ctx),
         }).then(Boolean);
@@ -214,7 +214,7 @@ export const callerRequestsArg = rule({ cache: 'no_cache' })(
 
 export const argRequestsArg = rule({ cache: 'strict' })(
     (parent: undefined, args: IEventArg & IUserArg) => {
-        return Event.find({
+        return Event.findOne({
             _id: Types.ObjectId(args.event),
             requests: Types.ObjectId(args.user),
         }).then(Boolean);
