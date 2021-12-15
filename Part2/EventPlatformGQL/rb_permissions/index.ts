@@ -160,7 +160,7 @@ const DEFAULTS = {
         editEvent: and(
             or(
                 rules.callerManagesArg,
-                or(not(rules.argOwnerDefined), not(rules.argEventHasOwner)),
+                //or(not(rules.argOwnerDefined), not(rules.argEventHasOwner)),
             ),
             or(
                 not(rules.argIsPrivate),
@@ -281,7 +281,7 @@ const PREMIUM = {
         editEvent: and(
             or(
                 rules.callerManagesArg,
-                or(not(rules.argOwnerDefined), not(rules.argEventHasOwner)),
+                //or(not(rules.argOwnerDefined), not(rules.argEventHasOwner)),
             ),
             or(
                 not(rules.argIsPrivate),
@@ -327,7 +327,7 @@ const MODERATOR = {
         editEvent: and(
             or(
                 rules.callerManagesArg,
-                or(not(rules.argOwnerDefined), not(rules.argEventHasOwner)),
+                //or(not(rules.argOwnerDefined), not(rules.argEventHasOwner)),
             ),
             or(
                 not(rules.argIsPrivate),
@@ -459,7 +459,7 @@ const ADMINISTRATOR = {
         editEvent: and(
             or(
                 rules.callerManagesArg,
-                or(not(rules.argOwnerDefined), not(rules.argEventHasOwner)),
+                //or(not(rules.argOwnerDefined), not(rules.argEventHasOwner)),
             ),
             or(
                 not(rules.argIsPrivate),
