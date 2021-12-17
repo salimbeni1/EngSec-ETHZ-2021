@@ -366,59 +366,11 @@ export function acceptRequest(
         )
     }
 
-// TODO: Make this resolver obsolete
-export function addAttendant(parent: undefined, args: IEventArg & IUserArg) {
-    return Event.findByIdAndUpdate(
-        Types.ObjectId(args.event),
-        { $addToSet: { attendants: Types.ObjectId(args.user) } },
-    );
-}
-
-// TODO: Improve this resolver
-// export function createInvitation() {
-    //return Invitation.create({});
-//}
-
-// TODO: Make this interface obsolete
-export interface IEditInvitation {
-    from?: string
-    invited?: string
-    to?: string
-}
-// TODO: Make this resolver obsolete
-/*export function editInvitation(
-    parent: undefined,
-    { invitation }: { invitation: IEditInvitation & INode},
-) {
-    const _id = popId(invitation);
-    const mapped: {
-        from?: Types.ObjectId,
-        invited?: Types.ObjectId,
-        to?: Types.ObjectId,
-    } = {};
-    if (invitation.from) {
-        mapped.from = Types.ObjectId(invitation.from);
-    }
-    if (invitation.invited) {
-        mapped.invited = Types.ObjectId(invitation.invited);
-    }
-    if (invitation.to) {
-        mapped.to = Types.ObjectId(invitation.to);
-    }
-    return Invitation.findByIdAndUpdate(_id, { ...mapped });
-}
-*/
-
-// invite(user: ID!, event: ID!): Invitation
 export function invite(
     parent: undefined,
     { user, event }: IUserArg & IEventArg,
     ctx : IContext 
 ) {
-    //_id: ID!
-    // from: User!
-    // invited: User!
-    // to: Event!
     const o = getLoggedIn(ctx) // caller
     const userId = Types.ObjectId(user); // invited user
     const eventId = Types.ObjectId(event);
@@ -428,13 +380,6 @@ export function invite(
         to: event,
     });
 }
-
-//export function addAttendant(parent: undefined, args: IEventArg & IUserArg) {
-//    return Event.findByIdAndUpdate(
-//        Types.ObjectId(args.event),
-//        { $addToSet: { attendants: Types.ObjectId(args.user) } },
-//    );
-//}
 
 export async function acceptInvitation(
     parent: undefined,
@@ -462,14 +407,6 @@ export async function acceptInvitation(
 
     return event;
 }
-
-// TODO: Improve this resolver
-// export function deleteInvitation(
-//     parent: undefined,
-//     { invitation }: IInvitationArg,
-// ) {
-//     return Invitation.findOneAndDelete({ _id: Types.ObjectId(invitation) });
-// }
 
 export function declineInvitation(
     parent: undefined,
@@ -525,38 +462,6 @@ export function createPost(
     );
 }
 
-// TODO: Make this interface obsolete
-export interface IEditPost {
-    content: string
-    locked: boolean
-    author: string
-    reviewer: string
-    postedAt: string
-}
-// TODO: Make this resolver obsolete
-// export function editPost(parent: undefined, { post }: { post: IEditPost & INode }) {
-//     const _id = popId(post);
-//     const mapped: {
-//         author?: Types.ObjectId,
-//         reviewer?: Types.ObjectId,
-//         postedAt?: Types.ObjectId,
-//     } = {};
-//     if (post.author) {
-//         mapped.author = Types.ObjectId(post.author);
-//     }
-//     if (post.reviewer) {
-//         mapped.reviewer = Types.ObjectId(post.reviewer);
-//     }
-//     if (post.postedAt) {
-//         mapped.postedAt = Types.ObjectId(post.postedAt);
-//     }
-//     return Post.findByIdAndUpdate(
-//         _id,
-//         // Later spreads take priority over earlier spreads
-//         { ...post, ...mapped },
-//     );
-// }
-
 export function unlockPost(parent: undefined, { post }: IPostArg) {
     const postId = Types.ObjectId(post);
     return Post.findByIdAndUpdate(
@@ -593,11 +498,3 @@ export function flagPost(parent: undefined, { post }: IPostArg) {
         { flagged: true },
     );
 }
-
-// TODO: Make this resolver obsolete
-// export function clearPost(parent: undefined, { post }: IPostArg) {
-//     return Post.findByIdAndUpdate(
-//         Types.ObjectId(post),
-//         { flagged: false },
-//     );
-// }
